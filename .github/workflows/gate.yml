@@ -1,0 +1,61 @@
+name: gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both ends of the supported range, and the matrix earns its keep: the
+        # floor was declared as 22.6 (where --experimental-strip-types landed)
+        # and CI proved that wrong on its first run. Panda's CLI `require()`s an
+        # ES module, which Node only supports unflagged from 22.12 — below that,
+        # `panda codegen` dies, `styled-system/` is never generated, and tsc
+        # reports a hundred "Cannot find module 'styled-system/jsx'" errors that
+        # look like a broken design system rather than a dead codegen step.
+        node: ["22.12", "24"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      # typecheck + unit tests + the Panda glob guard + pack validation.
+      # One command, the same one a developer runs, so CI and local cannot
+      # disagree about what "green" means.
+      - run: npm run gate
+
+      # The gate above validates the packs that are checked in. This asserts the
+      # set is not empty: "0 violations over 0 packs" and "0 violations over 122
+      # items" are the same output and different facts, and a glob or path change
+      # that quietly stopped finding packs would otherwise pass.
+      - name: assert the validator examined a non-empty pack set
+        run: |
+          out=$(npm run validate --silent)
+          echo "$out"
+          count=$(echo "$out" | sed -n 's/^Examined \([0-9]*\) items.*/\1/p')
+          if [ -z "$count" ] || [ "$count" -lt 100 ]; then
+            echo "::error::validator examined ${count:-no} items; expected at least 100"
+            exit 1
+          fi
+          echo "validator examined $count items"
+
+      # A green build says nothing about whether the app actually boots.
+      - run: npm run build --workspace=@stonedogcode/mind-web

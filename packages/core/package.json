@@ -1,0 +1,30 @@
+{
+  "name": "@stonedogcode/mind-core",
+  "version": "0.1.0",
+  "description": "The stonedog-mind engine: session planning, grading, validation and item identity. Pure — no React, no styling, no Node builtins. Reading packs off disk lives behind the ./node entry point.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./node": "./src/node.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "!src/**/*.test.ts"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/*.test.ts",
+    "validate": "node --experimental-strip-types src/cli.ts ../../packs ../../packs-private"
+  },
+  "dependencies": {
+    "ts-fsrs": "^5.4.1",
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "@stonedogcode/mind-ui",
+  "version": "0.1.0",
+  "description": "The stonedog-mind quiz screens, built on @stonedogcode/style.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "//exports": "This package ships TypeScript SOURCE, not a bundled dist/, for the same reason @stonedogcode/style does: Panda CSS extracts styles by statically parsing source at the CONSUMER's build. A pre-bundled dist would emit class names Panda never generated a stylesheet for. Consumers must transpile us (Next.js: transpilePackages) AND add our src to their panda `include` globs.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "!src/**/__tests__/**"
+  ],
+  "scripts": {
+    "panda:prepare": "panda codegen",
+    "prepare": "npm run panda:prepare",
+    "pretypecheck": "npm run panda:prepare",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@stonedogcode/style": ">=0.17.0",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "@stonedogcode/mind-core": "^0.1.0"
+  },
+  "devDependencies": {
+    "@stonedogcode/style": "^0.17.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.6.0",
+    "@pandacss/dev": "^1.12.0"
+  },
+  "//dependencies": "A caret, not an exact pin. Inside the workspace npm resolves this to the local packages/core either way; the difference only shows once both are PUBLISHED, where '0.1.0' would force every consumer onto exactly that version and break them on the next core patch. Note the other repos in this fleet use 'file:' or '*' for internal packages \u2014 those are never published, so they never face this."
+}
