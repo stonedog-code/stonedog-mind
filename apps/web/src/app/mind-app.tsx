@@ -14,8 +14,8 @@
  * own store instead of from files.
  */
 
-import { MindSession } from "@stonedogcode/mind-ui";
-import type { LoadedPackSummary, SessionPlan } from "./types.ts";
+import { SessionClient } from "./session-client.tsx";
+import type { LoadedPackSummary, RetentionReport, SessionPlan } from "./types.ts";
 import {
   StyledBox,
   StyledHStack,
@@ -31,9 +31,10 @@ export interface MindAppProps {
   topics: LoadedPackSummary[];
   mode: "practice" | "companion";
   focus?: string | undefined;
+  stats?: RetentionReport | undefined;
 }
 
-export function MindApp({ plan, topics, mode, focus }: MindAppProps) {
+export function MindApp({ plan, topics, mode, focus, stats }: MindAppProps) {
   const isCompanion = mode === "companion";
 
   const href = (next: Record<string, string | undefined>) => {
@@ -85,7 +86,27 @@ export function MindApp({ plan, topics, mode, focus }: MindAppProps) {
           </StyledHStack>
         </StyledBox>
 
-        <MindSession plan={plan} />
+        <SessionClient plan={plan} />
+
+        {/*
+          The honest number: of the answers given to items last seen a week or
+          more earlier, how many were right. Not a streak — a streak rewards
+          showing up and rushing, which degrades the very signal this measures.
+          Nothing is shown until there is something real to show.
+        */}
+        {stats && stats.matured > 0 && (
+          <StyledText>
+            Retention: {Math.round((stats.maturedCorrect / stats.matured) * 100)}% —{" "}
+            {stats.maturedCorrect} of {stats.matured} recalled after a week or more, across{" "}
+            {stats.itemsSeen} items seen.
+          </StyledText>
+        )}
+        {stats && stats.matured === 0 && stats.total > 0 && (
+          <StyledText>
+            {stats.total} answers recorded across {stats.itemsSeen} items. Retention appears once
+            items start coming back after a week.
+          </StyledText>
+        )}
 
         {/*
           Disclaimer A — the senior-facing wording. Warm, short, no legal

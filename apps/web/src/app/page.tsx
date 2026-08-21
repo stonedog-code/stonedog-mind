@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import { planSession, seedFor, type Mode } from "@stonedogcode/mind-core";
+import { planSession, retention, seedFor, type Mode } from "@stonedogcode/mind-core";
 /*
   Reading packs off disk is the Node-only surface, imported from a separate
   entry point on purpose: a client component reaching for `loadPacks` gets a
   build error instead of dragging `node:fs` into the browser bundle. This page
   is a server component, so it may.
 */
-import { loadPacks, packDirectories, packsForMode } from "@stonedogcode/mind-core/node";
+import { FileStore, loadPacks, packDirectories, packsForMode } from "@stonedogcode/mind-core/node";
 
 import { MindApp } from "./mind-app.tsx";
 import { EmptyState } from "./empty-state.tsx";
@@ -42,7 +42,19 @@ export default async function Home({ searchParams }: PageProps) {
     local app has no such ambiguity, and inventing the plumbing now would be
     speculative.
   */
-  const date = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const date = now.toISOString().slice(0, 10);
+
+  /*
+    Shell fetches, core decides.
+
+    The store is read here and the state handed to the planner as plain data, so
+    `planSession` stays pure and testable. Reading every state rather than a
+    bounded set is fine at this size — a personal log is thousands of rows, not
+    millions — and becomes a `getStates(keys)` call the day it is not.
+  */
+  const store = new FileStore();
+  const states = await store.getStates();
 
   const plan = planSession({
     packs: available,
@@ -51,13 +63,23 @@ export default async function Home({ searchParams }: PageProps) {
     date,
     seed: seedFor(date, `${mode}:${focus ?? "mix"}`),
     focus,
+    states,
+    now,
   });
+
+  /*
+    Retention is shown in practice mode only. In companion mode a score shown to
+    the learner turns a pastime into a test, which is the one thing that mode
+    exists to avoid.
+  */
+  const stats = mode === "practice" ? retention(await store.getLog()) : undefined;
 
   return (
     <MindApp
       plan={plan}
       mode={mode}
       focus={focus}
+      stats={stats}
       topics={available.map((p) => ({ id: p.pack.pack, title: p.pack.title }))}
     />
   );

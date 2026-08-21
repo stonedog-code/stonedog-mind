@@ -10,7 +10,7 @@
     "apps/*"
   ],
   "engines": {
-    "node": ">=22.6"
+    "node": ">=22.12"
   },
   "scripts": {
     "dev": "npm run dev --workspace=@stonedogcode/mind-web",

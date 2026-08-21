@@ -6,3 +6,4 @@
  * "UnhandledSchemeError: node:fs" three layers down an import trace.
  */
 export * from "./pack.ts";
+export * from "./store-fs.ts";

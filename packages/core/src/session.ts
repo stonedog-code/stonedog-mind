@@ -8,6 +8,8 @@
  */
 
 import { itemKey } from "./item-key.ts";
+import { isDue } from "./schedule.ts";
+import type { ReviewState } from "./storage.ts";
 import type { LoadedPack, Mode, PlannedItem, SessionPlan } from "./types.ts";
 
 /** Roughly how long one item takes, for display only. Never a countdown. */
@@ -44,6 +46,17 @@ export interface PlanInput {
   seed: number;
   /** When set, plan only from this pack — the "focus on one" case. */
   focus?: string | undefined;
+  /**
+   * Scheduling state for the candidate items, keyed by item key. Fetched by the
+   * shell; `core` never reads storage itself.
+   *
+   * Omit it and planning falls back to "everything is new", which is exactly
+   * right for a first run and wrong for every run after — so a caller that
+   * forgets this gets a working session that quietly never learns.
+   */
+  states?: Map<string, ReviewState> | undefined;
+  /** "Now", as an instant. Core has no clock. */
+  now?: Date | undefined;
 }
 
 /**
@@ -75,37 +88,53 @@ export function planSession(input: PlanInput): SessionPlan {
 
   let chosen: PlannedItem[];
 
+  const states = input.states;
+  const now = input.now ?? new Date(`${date}T12:00:00Z`);
+
   if (mode === "companion") {
-    // Open on the warmup pool, then gentler items first. No difficulty spike.
+    // Open on the warmup pool, then gentler items first. No difficulty spike:
+    // a scheduler tuned to push someone to the edge of forgetting is exactly
+    // wrong for someone who may be quietly worried about their memory.
     const warmup = shuffled(pool.filter((p) => p.item.difficulty === 1), next);
     const rest = shuffled(pool.filter((p) => p.item.difficulty > 1), next).sort(
       (a, b) => a.item.difficulty - b.item.difficulty,
     );
     chosen = [...warmup.slice(0, 3), ...rest].slice(0, budget);
   } else {
-    // Round-robin across topics so a session is a genuine mix, then shuffle so
-    // the order does not telegraph which pack a question came from.
-    const byTopic = new Map<string, PlannedItem[]>();
-    for (const p of pool) {
-      if (!byTopic.has(p.packId)) byTopic.set(p.packId, []);
-      byTopic.get(p.packId)!.push(p);
-    }
-    for (const [topic, items] of byTopic) byTopic.set(topic, shuffled(items, next));
+    /*
+      Practice mode is due-driven.
 
-    const interleaved: PlannedItem[] = [];
-    let added = true;
-    while (interleaved.length < budget && added) {
-      added = false;
-      for (const items of byTopic.values()) {
-        const item = items.shift();
-        if (item) {
-          interleaved.push(item);
-          added = true;
-          if (interleaved.length >= budget) break;
-        }
-      }
-    }
-    chosen = shuffled(interleaved, next);
+      Three tiers, in order: items whose interval has elapsed, then items never
+      seen, then — only if the budget is still unfilled — items not yet due,
+      soonest first.
+
+      That third tier is a deliberate compromise. FSRS would say not to review
+      early, and on a large corpus it is right. On a corpus of a few hundred
+      items a strict reading produces an empty session most mornings, and an
+      empty session is a habit broken. Reviewing early costs some efficiency;
+      it does not corrupt anything, because the scheduler re-derives from what
+      actually happened.
+    */
+    const withState = pool.map((p) => ({ p, state: states?.get(p.key.key) }));
+
+    const due = withState
+      .filter(({ state }) => state !== undefined && isDue(state, now))
+      .sort((a, b) => a.state!.due.localeCompare(b.state!.due))
+      .map(({ p }) => p);
+
+    const fresh = shuffled(withState.filter(({ state }) => state === undefined).map(({ p }) => p), next);
+
+    const upcoming = withState
+      .filter(({ state }) => state !== undefined && !isDue(state, now))
+      .sort((a, b) => a.state!.due.localeCompare(b.state!.due))
+      .map(({ p }) => p);
+
+    const ordered = [...due, ...fresh, ...upcoming].slice(0, budget);
+
+    // Shuffle the selection so the order does not telegraph which tier an item
+    // came from — a run of "these are the ones you got wrong" is discouraging
+    // and tells you nothing you could not read from the explanation.
+    chosen = shuffled(ordered, next);
   }
 
   return {

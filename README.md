@@ -9,8 +9,9 @@ npm install
 npm run dev          # http://localhost:3210
 ```
 
-That is the whole setup. No database, no account, no import step. **Node 22.6 or
-newer** — the tooling runs TypeScript directly via `--experimental-strip-types`.
+That is the whole setup. No database, no account, no import step. **Node 22.12 or
+newer** — Panda's CLI needs `require(esm)`, unflagged from 22.12; the tooling also runs
+TypeScript directly via `--experimental-strip-types`.
 
 Verified from a clean clone: `npm install && npm run gate && npm run dev`.
 
@@ -68,6 +69,35 @@ item[0] vpn-client: provenance 'generated' with no reviewed_by — refuses to se
 so a pack only becomes servable once a person has put their name on the items
 they checked. No machine check can decide whether a question has a single
 defensible correct answer.
+
+## What it remembers
+
+Every answer is appended to `~/.stonedog-mind/reviews.jsonl` — one JSON object
+per line, never edited, never deleted. Scheduling state is **derived** from that
+log on read rather than stored beside it and mutated: recomputing from an
+ordered log is deterministic, while merging incremental updates from two devices
+goes silently wrong rather than loudly wrong.
+
+The log lives outside the repo deliberately. It is a record of what you keep
+getting wrong, and a working tree is how that ends up in a commit.
+`STONEDOG_MIND_HOME` moves it.
+
+Scheduling is [FSRS](https://github.com/open-spaced-repetition/ts-fsrs), not
+something written here. A session shows overdue items first, then items you have
+never seen, and only then — if the budget is still unfilled — items not yet due,
+soonest first. That last tier is a deliberate compromise: on a small corpus a
+strict reading gives you an empty session most mornings, and an empty session is
+a habit broken.
+
+Answers map to Again/Good and nothing else. FSRS accepts four grades, but Hard
+and Easy need the learner to report *how* hard recall was — a multiple-choice
+answer is right or it is not, and four buttons someone guesses at would feed the
+scheduler noise dressed as signal.
+
+`Retention` on the session screen is the honest number: of the answers given to
+items last seen a week or more earlier, how many were right. Not a streak — a
+streak rewards showing up and rushing, which degrades the very thing it claims
+to measure.
 
 ## The gate
 

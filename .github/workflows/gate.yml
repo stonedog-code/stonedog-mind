@@ -18,11 +18,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Both ends of the supported range. 22.6 is the floor because the
-        # tooling runs TypeScript directly via --experimental-strip-types, which
-        # landed there; running the matrix is what turns that from a claim in
-        # package.json into something we have actually checked.
-        node: ["22.6", "24"]
+        # Both ends of the supported range, and the matrix earns its keep: the
+        # floor was declared as 22.6 (where --experimental-strip-types landed)
+        # and CI proved that wrong on its first run. Panda's CLI `require()`s an
+        # ES module, which Node only supports unflagged from 22.12 — below that,
+        # `panda codegen` dies, `styled-system/` is never generated, and tsc
+        # reports a hundred "Cannot find module 'styled-system/jsx'" errors that
+        # look like a broken design system rather than a dead codegen step.
+        node: ["22.12", "24"]
 
     steps:
       - uses: actions/checkout@v4
