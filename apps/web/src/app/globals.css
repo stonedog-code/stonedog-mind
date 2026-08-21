@@ -1,0 +1,6 @@
+/**
+ * The layer declaration MUST be first — the Panda PostCSS plugin injects into
+ * these layers by name, and CSS layer order is decided by the first mention.
+ * Move it and the design system's rules land in the wrong precedence order.
+ */
+@layer reset, base, tokens, recipes, utilities;

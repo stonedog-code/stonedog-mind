@@ -1,0 +1,23 @@
+{
+  "name": "stonedog-mind",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A daily, timeboxed, topic-driven quiz engine.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace=@stonedogcode/mind-web",
+    "build": "npm run build --workspace=@stonedogcode/mind-web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspace=@stonedogcode/mind-core && npm run test:panda --workspace=@stonedogcode/mind-web",
+    "validate": "node --experimental-strip-types packages/core/src/cli.ts",
+    "gate": "npm run typecheck && npm test && npm run validate"
+  }
+}

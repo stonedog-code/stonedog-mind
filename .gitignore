@@ -9,3 +9,7 @@ __pycache__/
 
 # Product requirements documents are internal and are not published here.
 docs/prd/
+.next/
+.playwright-mcp/
+*.png
+*.tsbuildinfo
