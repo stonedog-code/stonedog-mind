@@ -1,0 +1,246 @@
+pack: playwright
+version: 1
+title: Playwright
+description: Locators, auto-waiting, fixtures and the anti-patterns that make E2E suites flaky.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [practice]
+locale: en-GB
+
+items:
+
+  - id: auto-waiting
+    type: multiple-choice
+    difficulty: 2
+    tags: [waiting]
+    prompt: What does Playwright's auto-waiting do before performing `click()`?
+    options:
+      - Waits a fixed 5 seconds
+      - Waits only for the element to exist in the DOM
+      - Nothing — you must add an explicit wait
+      - Waits for it to be visible, stable, enabled and hittable
+    answer: 3
+    explain: >-
+      Playwright runs actionability checks and retries until they pass or the timeout expires. That
+      is why `waitForTimeout` is almost always wrong: it either waits too long or not long enough,
+      and it hides the real condition you meant to wait for.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: locator-vs-elementhandle
+    type: multiple-choice
+    difficulty: 3
+    tags: [locators]
+    prompt: What is the key difference between a Locator and an ElementHandle?
+    options:
+      - A Locator is re-resolved on each use; an ElementHandle goes stale
+      - A Locator can only match one element
+      - An ElementHandle supports auto-waiting; a Locator does not
+      - They are the same; Locator is the newer name
+    answer: 0
+    explain: >-
+      A Locator re-queries the page every time you use it, so it survives re-renders — which is why
+      it is the modern API and ElementHandle is discouraged. An ElementHandle captured before a React
+      re-render refers to a detached node and throws.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: locator-priority
+    type: multiple-choice
+    difficulty: 2
+    tags: [locators]
+    prompt: Which locator should you reach for FIRST?
+    options:
+      - "getByRole, because it matches how users and assistive technology perceive the page"
+      - A CSS selector on a class name, because it is fastest
+      - An XPath expression, because it is most precise
+      - "getByTestId, because it never changes"
+    answer: 0
+    explain: >-
+      Role-based locators are resilient and double as an accessibility check — if `getByRole` cannot
+      find your button, a screen reader probably cannot either. Class-based CSS breaks on every
+      restyle. `getByTestId` is the escape hatch when nothing user-visible identifies the element,
+      not the default.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: web-first-assertions
+    type: multiple-choice
+    difficulty: 3
+    tags: [assertions]
+    prompt: Why is `await expect(locator).toHaveText("Saved")` better than `expect(await locator.textContent()).toBe("Saved")`?
+    options:
+      - The first runs synchronously and needs no await
+      - The second does not work in TypeScript
+      - There is no practical difference between the two
+      - The first retries until the text appears; the second reads once
+    answer: 3
+    explain: >-
+      Web-first assertions poll. Reading the value into a variable first freezes a snapshot, so any
+      async update loses the race. This one distinction accounts for a large share of real-world
+      Playwright flake — and the flaky version passes locally, where everything is fast.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: storage-state
+    type: multiple-choice
+    difficulty: 3
+    tags: [auth]
+    prompt: What problem does `storageState` solve?
+    options:
+      - It persists test results between runs
+      - It shares a browser window between tests
+      - It stores screenshots for visual comparison
+      - It saves cookies and localStorage so later tests start signed in
+    answer: 3
+    explain: >-
+      Logging in through the UI in every test is slow and attaches the login page's flakiness to
+      every unrelated test. A global setup logs in once, saves the state to a file, and each test
+      loads it. This is the Playwright expression of "arrange over the API, act through the UI".
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: test-isolation
+    type: multiple-choice
+    difficulty: 2
+    tags: [architecture]
+    prompt: What does Playwright give each test by default?
+    options:
+      - A shared context with all other tests in the file
+      - A new context only if the previous test failed
+      - A fresh, isolated browser context
+      - A brand new browser process
+    answer: 2
+    explain: >-
+      Contexts are cheap and isolated, so tests cannot leak session state into one another while
+      still avoiding the cost of a browser launch per test. Deliberately sharing a context — via
+      `test.describe.serial` or a worker-scoped fixture — is possible but reintroduces
+      order-dependence.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: fixtures-as-di
+    type: multiple-choice
+    difficulty: 3
+    tags: [architecture]
+    prompt: In a page-object suite, what is the cleanest way for a test to obtain a page object?
+    options:
+      - Extend `test` with a custom fixture that constructs it, so the test declares it as an argument
+      - Construct it with `new LoginPage(page)` at the top of each test
+      - Import a module-level singleton
+      - Create it in a `beforeEach` and store it on `this`
+    answer: 0
+    explain: >-
+      Playwright fixtures ARE the dependency-injection container. A test that says
+      `async ({ loginPage }) => …` declares what it needs and receives it already wired, so
+      construction details can change in one place. A module-level singleton reintroduces shared
+      state across tests, defeating context isolation.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: trace-viewer
+    type: multiple-choice
+    difficulty: 2
+    tags: [debugging]
+    prompt: 'What does `trace: "on-first-retry"` capture?'
+    options:
+      - Browser console output from every run, passing or not
+      - DOM snapshots, actions, network and console for the retried run
+      - A video recording of the browser window only
+      - A stack trace captured at the point of failure
+    answer: 1
+    explain: >-
+      Tracing on first retry is the standard CI setting: no overhead on the passing path, and a
+      complete post-mortem of the failure. The trace viewer lets you scrub through action-by-action
+      DOM snapshots, which is usually faster than reproducing a CI-only failure locally.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: route-mocking
+    type: multiple-choice
+    difficulty: 3
+    tags: [network]
+    prompt: What does `page.route()` allow?
+    options:
+      - Recording requests for later replay only
+      - Routing tests to different workers
+      - Intercepting requests to fulfil, modify or abort them
+      - Changing the browser's proxy settings
+    answer: 2
+    explain: >-
+      Interception lets you test the error path — a 500, a timeout, an empty list — which is often
+      impossible to trigger against a real backend. Use it deliberately: mocking the very API whose
+      integration you are trying to verify turns an E2E test into an expensive unit test.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: strict-mode-violation
+    type: multiple-choice
+    difficulty: 3
+    tags: [locators]
+    prompt: A locator resolves to three elements and you call `.click()`. What happens?
+    options:
+      - All three are clicked
+      - The call silently does nothing
+      - A strict mode violation error
+      - The first match is clicked
+    answer: 2
+    explain: >-
+      Playwright locators are strict by default: ambiguity is an error, not a guess. That is a
+      feature — clicking "the first match" is how a test quietly starts asserting against the wrong
+      element. Resolve it with `.first()`, `.nth()`, or better, a more specific locator such as one
+      scoped by `getByRole` within a container.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: no-locators-in-tests
+    type: multiple-choice
+    difficulty: 2
+    tags: [architecture]
+    prompt: Why should a test never construct a locator directly?
+    options:
+      - Tests cannot access the page object
+      - Playwright forbids it
+      - Selector knowledge belongs in one page object
+      - Locators are slow to construct
+    answer: 2
+    explain: >-
+      A test that calls `page.getByRole(...)` has learned the page's structure, so every such test
+      must change when the markup does. Keeping selectors in page objects is enforceable with a
+      simple grep over the tests directory — which makes it a rule a CI job can hold, not just a
+      convention.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: viewport-jsdom
+    type: true-false
+    difficulty: 2
+    tags: [architecture]
+    prompt: A jsdom-based unit test can verify that a 400px panel overflows a 375px viewport.
+    options: ["True", "False"]
+    answer: 1
+    explain: >-
+      False. jsdom has no layout engine — every element reports a zero-sized box — so it will
+      happily agree that anything fits anywhere. Overflow, focus order, tap-target size and any other
+      pixel question belongs in Playwright at real viewports. This is why the E2E tier is not
+      optional for UI work.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: soft-assertions
+    type: multiple-choice
+    difficulty: 4
+    tags: [assertions]
+    prompt: What does `expect.soft()` do?
+    options:
+      - Downgrades the failure to a warning that does not fail the test
+      - Skips the assertion if the element is missing
+      - Records the failure and continues the test, failing it at the end
+      - Retries the assertion more times before failing
+    answer: 2
+    explain: >-
+      Soft assertions let one test report several problems in one run instead of stopping at the
+      first — useful when checking many fields on a page. The test still fails. It is NOT a way to
+      tolerate failures; an assertion you are willing to see fail should be deleted.
+    provenance: authored
+    reviewed_by: jesse

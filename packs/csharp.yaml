@@ -1,0 +1,276 @@
+pack: csharp
+version: 1
+title: C#
+description: Type semantics, async, LINQ deferred execution, and the disposal rules.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [practice]
+locale: en-GB
+
+items:
+
+  - id: struct-vs-class
+    type: multiple-choice
+    difficulty: 2
+    tags: [types]
+    prompt: What is the fundamental difference between a `struct` and a `class` in C#?
+    options:
+      - A struct is always stored on the stack
+      - A struct is a value type; a class is a reference type
+      - A struct cannot have methods
+      - A class cannot be immutable
+    answer: 1
+    explain: >-
+      Value versus reference semantics is the real distinction. "Structs live on the stack" is the
+      common half-truth — a struct that is a field of a class lives on the heap inside that object,
+      and a captured local can be hoisted too. Where it lives is an implementation detail; how it
+      copies is the contract.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: async-void
+    type: multiple-choice
+    difficulty: 4
+    tags: [async]
+    prompt: Why is `async void` dangerous outside of an event handler?
+    options:
+      - It runs synchronously
+      - It cannot be awaited, so it never executes
+      - It leaks a thread on every call
+      - Its exceptions cannot be caught by the caller and crash the process
+    answer: 3
+    explain: >-
+      An `async Task` method carries its exception on the returned Task, where `await` observes it.
+      `async void` has nowhere to put it, so it is rethrown on the captured context — unhandled and
+      usually fatal. It also cannot be awaited, so callers cannot know it finished. Event handlers
+      are the sanctioned exception because the delegate signature demands void.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: configureawait
+    type: multiple-choice
+    difficulty: 4
+    tags: [async]
+    prompt: What does `ConfigureAwait(false)` do?
+    options:
+      - Suppresses exceptions from the awaited task
+      - Lets the continuation resume off the captured context
+      - Cancels the awaited task if it takes too long
+      - Makes the await synchronous
+    answer: 1
+    explain: >-
+      In library code, not capturing the context avoids the classic deadlock where a UI or legacy
+      ASP.NET thread blocks on `.Result` while the continuation waits for that same thread. ASP.NET
+      Core has no synchronization context, so it matters less there — but library authors cannot know
+      who will call them.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: linq-deferred
+    type: multiple-choice
+    difficulty: 3
+    tags: [linq]
+    prompt: |
+      What does this print?
+
+          var items = new List<int> { 1, 2, 3 };
+          var q = items.Where(x => x > 1);
+          items.Add(4);
+          Console.WriteLine(q.Count());
+    options:
+      - "It throws, because the collection was modified"
+      - "3"
+      - "2"
+      - "4"
+    answer: 1
+    explain: >-
+      LINQ query operators are lazy. `Where` builds a description, not a result; the predicate runs
+      when `Count()` enumerates — by which time the list holds 1, 2, 3, 4, so 2, 3 and 4 match.
+      Calling `.ToList()` immediately would have captured 2. Deferred execution is a frequent source
+      of surprising bugs, especially with a captured loop variable or a database context.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: idisposable-using
+    type: multiple-choice
+    difficulty: 2
+    tags: [resources]
+    prompt: What does the `using var conn = new SqlConnection(...)` declaration do?
+    options:
+      - Sets the variable to null at the end of the block
+      - Prevents the object from being garbage collected
+      - Makes the object thread-safe
+      - Calls Dispose at the end of scope, even on an exception
+    answer: 3
+    explain: >-
+      It compiles to try/finally with a `Dispose` call. Dispose is deterministic cleanup of
+      unmanaged resources — handles, sockets, connections — and is unrelated to garbage collection,
+      which handles memory non-deterministically. Relying on the GC to close a database connection is
+      how a pool gets exhausted.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: string-immutable
+    type: multiple-choice
+    difficulty: 2
+    tags: [types]
+    prompt: Why is concatenating strings in a large loop a performance problem?
+    options:
+      - String concatenation is a synchronous I/O operation
+      - The compiler cannot optimise loops containing strings
+      - It causes boxing of each character
+      - Strings are immutable, so each concatenation allocates and copies
+    answer: 3
+    explain: >-
+      Each `+=` allocates a fresh string of the combined length, making the loop quadratic in total
+      copying. `StringBuilder` keeps a mutable buffer and amortises the growth. For a fixed small
+      number of pieces the compiler folds it into `String.Concat` and there is nothing to fix.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: nullable-reference
+    type: multiple-choice
+    difficulty: 3
+    tags: [types]
+    prompt: With nullable reference types enabled, what does `string?` mean?
+    options:
+      - The variable is boxed into a Nullable<string>
+      - Assigning null throws at runtime
+      - The type becomes a value type
+      - The compiler warns on unchecked dereferences — analysis, not enforcement
+    answer: 3
+    explain: >-
+      Nullable reference types are compile-time annotations plus flow analysis; nothing changes at
+      runtime, and a null can still arrive from unannotated code, reflection or deserialisation.
+      `Nullable<T>` — the boxing-free `int?` machinery — applies only to value types and is a
+      different mechanism entirely.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: record-equality
+    type: multiple-choice
+    difficulty: 3
+    tags: [types]
+    prompt: How does equality differ between a `record` and a `class`?
+    options:
+      - Records cannot be compared
+      - Classes compare by value if they override ToString
+      - Both compare by value
+      - Records compare by value; classes compare by reference
+    answer: 3
+    explain: >-
+      A record generates `Equals`, `GetHashCode` and `==` based on its members, plus a `with`
+      expression for non-destructive copies. That makes records natural for DTOs and value objects.
+      Note the generated equality is shallow — a record holding a `List<T>` compares that list by
+      reference.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: yield-return
+    type: multiple-choice
+    difficulty: 3
+    tags: [iterators]
+    prompt: What does `yield return` produce?
+    options:
+      - A thread that pushes items to the caller
+      - A compiler-generated state machine that yields lazily
+      - A list built eagerly and returned at the end
+      - A task that completes when all items are ready
+    answer: 1
+    explain: >-
+      The method body does not run at all until enumeration begins, and it pauses at each yield.
+      That gives constant memory over huge sequences — but it also means an argument-validation
+      throw at the top of an iterator method does not fire until the caller starts iterating, which
+      is why validation usually goes in a non-iterator wrapper.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: task-result-deadlock
+    type: multiple-choice
+    difficulty: 4
+    tags: [async]
+    prompt: Why can calling `.Result` on a Task deadlock in a UI or classic ASP.NET application?
+    options:
+      - The task is cancelled as soon as its caller blocks
+      - .Result takes a process-wide lock while it waits
+      - The caller blocks the thread the continuation needs to resume
+      - Task.Result always spawns a new thread
+    answer: 2
+    explain: >-
+      The continuation is posted back to the captured synchronization context, but that single
+      thread is blocked waiting for the task to finish — so neither can proceed. The fixes, in order
+      of preference: await all the way up; or `ConfigureAwait(false)` in the library. ASP.NET Core
+      removed the context, so the deadlock does not occur there.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: ienumerable-vs-iqueryable
+    type: multiple-choice
+    difficulty: 4
+    tags: [linq]
+    prompt: In Entity Framework, why does the difference between `IEnumerable<T>` and `IQueryable<T>` matter?
+    options:
+      - They are identical at runtime
+      - IQueryable becomes SQL; IEnumerable filters in memory
+      - IEnumerable is faster for large result sets
+      - IQueryable cannot be used with LINQ
+    answer: 1
+    explain: >-
+      `IQueryable` carries an expression tree the provider turns into a WHERE clause. The moment a
+      query is typed as `IEnumerable` — often by an innocuous-looking helper method signature —
+      composition switches to LINQ-to-Objects and the whole table is materialised first. The code
+      still works, which is precisely why it survives review.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: readonly-vs-const
+    type: multiple-choice
+    difficulty: 3
+    tags: [types]
+    prompt: What is the practical difference between `const` and `static readonly`?
+    options:
+      - const can only hold strings
+      - static readonly cannot be initialised in a constructor
+      - const fields are mutable at runtime
+      - const is inlined into consuming assemblies at compile time
+    answer: 3
+    explain: >-
+      A `const` is baked into every calling assembly's IL. Ship a new library with a changed const
+      and callers keep the old value until rebuilt — a genuinely confusing production bug.
+      `static readonly` is read at runtime, so it can also hold non-primitive values and be set in a
+      static constructor.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: boxing
+    type: multiple-choice
+    difficulty: 3
+    tags: [performance]
+    prompt: What is boxing?
+    options:
+      - Grouping fields into a struct
+      - Wrapping a value type in a heap-allocated object
+      - Encrypting a value before storage
+      - Wrapping a method call in a try/catch
+    answer: 1
+    explain: >-
+      Assigning an `int` to `object`, or to a non-generic interface reference, allocates. In a hot
+      loop that is heap pressure for nothing. Generics exist largely to avoid it — `List<int>` stores
+      ints directly, while the old `ArrayList` boxed every one.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: finalizer-vs-dispose
+    type: true-false
+    difficulty: 3
+    tags: [resources]
+    prompt: Implementing a finalizer (~ClassName) is the recommended way to release unmanaged resources in modern C#.
+    options: ["False", "True"]
+    answer: 0
+    explain: >-
+      False. Finalizers run non-deterministically, promote the object to a later GC generation, and
+      cannot be relied on to run at all at shutdown. `IDisposable` with `using` is the recommended
+      pattern; a finalizer is a last-resort safety net for a type that directly owns a raw handle —
+      and `SafeHandle` usually removes even that need.
+    provenance: authored
+    reviewed_by: jesse

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+styled-system/
+__pycache__/
+*.pyc
+.venv/
+.venv-macos/
+.DS_Store
+
+# Product requirements documents are internal and are not published here.
+docs/prd/

@@ -1,0 +1,285 @@
+pack: geography
+version: 1
+title: Around the World
+description: >-
+  Places, landmarks and rivers — written to be enjoyed and talked about, not to be
+  scored. Suitable for companion mode.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [companion, practice]
+locale: en-GB
+
+# COMPANION-MODE CONTENT RULES
+# - Nothing about death, illness, war, disaster or decline.
+# - Nothing requiring recall of a recent or changing fact (current office-holders,
+#   this year's population, anything that was true only lately).
+# - Every explanation gives something worth saying out loud to another person.
+# - At least three difficulty-1 items form the warmup pool.
+
+items:
+
+  # ---- warmup pool (difficulty 1) ----
+
+  - id: eiffel-country
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, landmarks]
+    prompt: The Eiffel Tower stands in which city?
+    options: ["Rome", "Madrid", "Vienna", "Paris"]
+    answer: 3
+    explain: >-
+      Paris. It was built for the World's Fair of 1889 and was only ever meant to stand for twenty
+      years — the city kept it because it turned out to be a marvellous radio mast.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: venice-water
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, cities]
+    prompt: Which famous city is built on canals instead of roads?
+    options: ["Athens", "Lisbon", "Dublin", "Venice"]
+    answer: 3
+    explain: >-
+      Venice, in Italy. It is built across more than a hundred small islands, and the buses are
+      boats — the vaporetti. Even the ambulances float.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: kangaroo-country
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, countries]
+    prompt: Kangaroos live wild in which country?
+    options: ["Australia", "Brazil", "Norway", "Japan"]
+    answer: 0
+    explain: >-
+      Australia. There are more kangaroos there than people, and road signs warning of them are as
+      ordinary as deer signs elsewhere.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: pyramids-country
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, landmarks]
+    prompt: The Great Pyramids stand near which river?
+    options: ["The Thames", "The Nile", "The Amazon", "The Danube"]
+    answer: 1
+    explain: >-
+      The Nile, in Egypt. The pyramids sit on the west bank at Giza — the side where the sun sets,
+      which the builders chose on purpose.
+    provenance: authored
+    reviewed_by: jesse
+
+  # ---- everyday (difficulty 2) ----
+
+  - id: paris-river
+    type: multiple-choice
+    difficulty: 2
+    tags: [paris, rivers]
+    prompt: Which river runs through the middle of Paris?
+    options: ["The Rhine", "The Seine", "The Loire", "The Rhône"]
+    answer: 1
+    explain: >-
+      The Seine. The oldest bridge across it is called the Pont Neuf, which means "new bridge" — it
+      has been the new bridge since 1607.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: paris-museum
+    type: multiple-choice
+    difficulty: 2
+    tags: [paris, landmarks]
+    prompt: Which Paris museum is home to the Mona Lisa?
+    options: ["The Prado", "The Uffizi", "The Rijksmuseum", "The Louvre"]
+    answer: 3
+    explain: >-
+      The Louvre, which was a royal palace long before it held paintings. The glass pyramid at its
+      entrance was added in the 1980s and caused a wonderful amount of argument.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: italy-shape
+    type: multiple-choice
+    difficulty: 2
+    tags: [countries]
+    prompt: Which country is often said to be shaped like a boot?
+    options: ["Greece", "Portugal", "Turkey", "Italy"]
+    answer: 3
+    explain: >-
+      Italy. The island of Sicily sits just off the toe, which makes the map look as though the boot
+      is kicking a football.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: big-ben
+    type: multiple-choice
+    difficulty: 2
+    tags: [landmarks]
+    prompt: In which city would you hear Big Ben strike the hour?
+    options: ["Cardiff", "Belfast", "London", "Edinburgh"]
+    answer: 2
+    explain: >-
+      London. Big Ben is properly the name of the bell inside, not the tower — the tower is the
+      Elizabeth Tower. Almost nobody minds the mix-up.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: sahara
+    type: multiple-choice
+    difficulty: 2
+    tags: [landscapes]
+    prompt: The Sahara, the world's largest hot desert, is on which continent?
+    options: ["Asia", "Australia", "South America", "Africa"]
+    answer: 3
+    explain: >-
+      Africa — it stretches right across the north of it, roughly the size of the United States.
+      It can be surprisingly cold there at night.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: canals-amsterdam
+    type: multiple-choice
+    difficulty: 2
+    tags: [cities]
+    prompt: Which European capital is famous for its ring of canals and its bicycles?
+    options: ["Brussels", "Copenhagen", "Warsaw", "Amsterdam"]
+    answer: 3
+    explain: >-
+      Amsterdam. The canal ring was dug in the seventeenth century, and the tall narrow houses along
+      it have hooks at the top for hoisting furniture in through the windows — the staircases are
+      far too steep.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: statue-liberty
+    type: multiple-choice
+    difficulty: 2
+    tags: [landmarks]
+    prompt: Which country gave the Statue of Liberty to the United States?
+    options: ["France", "Britain", "Spain", "Italy"]
+    answer: 0
+    explain: >-
+      France. She arrived in 1885 in 350 pieces packed into 214 crates, and was assembled in New York
+      harbour like an enormous model kit.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: great-wall
+    type: multiple-choice
+    difficulty: 2
+    tags: [landmarks]
+    prompt: The Great Wall is in which country?
+    options: ["Egypt", "China", "India", "Peru"]
+    answer: 1
+    explain: >-
+      China. It is not one wall but many, built and rebuilt over centuries, winding for thousands of
+      miles along the northern hills.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: alps
+    type: multiple-choice
+    difficulty: 2
+    tags: [landscapes]
+    prompt: Switzerland is best known for which mountain range?
+    options: ["The Alps", "The Andes", "The Rockies", "The Pyrenees"]
+    answer: 0
+    explain: >-
+      The Alps. The Matterhorn, with its bent pyramid peak, is the one on the chocolate boxes — and
+      on the actual chocolate.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: tulips
+    type: multiple-choice
+    difficulty: 2
+    tags: [countries]
+    prompt: Which country is most associated with tulip fields and windmills?
+    options: ["The Netherlands", "The Czech Republic", "Switzerland", "Luxembourg"]
+    answer: 0
+    explain: >-
+      The Netherlands. In the 1630s a single rare tulip bulb could change hands for the price of a
+      house — people still call it the first great speculative bubble.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: nile-longest
+    type: multiple-choice
+    difficulty: 3
+    tags: [rivers]
+    prompt: Which of these rivers flows northwards to the Mediterranean?
+    options: ["The Tiber", "The Nile", "The Danube", "The Thames"]
+    answer: 1
+    explain: >-
+      The Nile. Most great rivers run south or west, so the Nile flowing north confused mapmakers for
+      centuries — "up" the map and "downstream" are the same direction here.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: japan-islands
+    type: multiple-choice
+    difficulty: 3
+    tags: [countries]
+    prompt: Japan is made up of roughly how many islands?
+    options: ["Thousands", "Four", "Twelve", "About fifty"]
+    answer: 0
+    explain: >-
+      Thousands — though most people live on the four largest. Mount Fuji, the near-perfect cone,
+      sits on the biggest of them and can be seen from Tokyo on a clear day.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: rio-statue
+    type: multiple-choice
+    difficulty: 3
+    tags: [landmarks]
+    prompt: The statue of Christ the Redeemer looks out over which city?
+    options: ["Rio de Janeiro", "Lisbon", "Buenos Aires", "Havana"]
+    answer: 0
+    explain: >-
+      Rio de Janeiro, in Brazil. It stands on the Corcovado mountain with its arms open above the
+      harbour, and is struck by lightning several times a year.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: scotland-loch
+    type: multiple-choice
+    difficulty: 3
+    tags: [landscapes]
+    prompt: In Scotland, what is a "loch"?
+    options: ["A lake", "A mountain", "A valley", "A castle"]
+    answer: 0
+    explain: >-
+      A lake. Loch Ness is the famous one, though Loch Lomond is the largest by surface area. A sea
+      loch is one that opens to the ocean.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: sydney-opera
+    type: multiple-choice
+    difficulty: 3
+    tags: [landmarks]
+    prompt: The Sydney Opera House roof is usually said to look like what?
+    options: ["Waves", "Shells stacked up", "Wings", "Sails"]
+    answer: 3
+    explain: >-
+      Sails — fitting, since it sits right on the harbour. The architect, Jørn Utzon, said the shape
+      came to him while peeling an orange into segments.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: iceland-name
+    type: multiple-choice
+    difficulty: 4
+    tags: [countries]
+    prompt: Which country is green and warm in summer despite a decidedly chilly name?
+    options: ["Iceland", "Greenland", "Finland", "Norway"]
+    answer: 0
+    explain: >-
+      Iceland — green meadows, hot springs and long bright evenings in June. Greenland, confusingly,
+      is the icy one. The old story says the names were swapped on purpose to put settlers off the
+      better island.
+    provenance: authored
+    reviewed_by: jesse

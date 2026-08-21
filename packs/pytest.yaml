@@ -1,0 +1,265 @@
+pack: pytest
+version: 1
+title: pytest
+description: Fixtures, parametrisation, marks, and the failure modes that make a suite lie.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [practice]
+locale: en-GB
+
+items:
+
+  - id: fixture-scope
+    type: multiple-choice
+    difficulty: 3
+    tags: [fixtures]
+    prompt: What does `@pytest.fixture(scope="session")` change?
+    options:
+      - The fixture is recreated for each test session variable
+      - The fixture is destroyed after each module
+      - The fixture becomes available without being requested
+      - It is created once per run and shared by every test
+    answer: 3
+    explain: >-
+      Scopes are function (default), class, module, package, session. Session scope is the fastest
+      and the most dangerous: shared mutable state leaks between tests, so a suite can pass in order
+      and fail when reordered. Reserve it for genuinely immutable or expensive-and-read-only things.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: yield-fixture
+    type: multiple-choice
+    difficulty: 2
+    tags: [fixtures]
+    prompt: In a fixture, what runs after the `yield`?
+    options:
+      - Teardown — and it runs even if the test failed
+      - Nothing; code after yield is unreachable
+      - Setup for the next test
+      - Only code that is wrapped in try/finally
+    answer: 0
+    explain: >-
+      Everything after `yield` is teardown, and pytest runs it whether the test passed, failed, or
+      errored. This replaced the older `addfinalizer` style. A fixture that acquires a resource
+      before `yield` and releases it after is the correct shape — it is a context manager wearing a
+      different hat.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: parametrize-ids
+    type: multiple-choice
+    difficulty: 2
+    tags: [parametrize]
+    prompt: What does `@pytest.mark.parametrize` produce?
+    options:
+      - One separate, independently reported test per parameter set
+      - A single test that loops over the parameters
+      - A fixture available to the whole module
+      - A test that runs only if all parameters pass
+    answer: 0
+    explain: >-
+      Each parameter set becomes its own test with its own id, so one failing case does not hide the
+      others and you can re-run just it with `pytest "test_x[case-3]"`. That independence is the
+      whole point — a hand-written for-loop inside one test stops at the first assertion failure.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: conftest-purpose
+    type: multiple-choice
+    difficulty: 2
+    tags: [config]
+    prompt: What is `conftest.py` for?
+    options:
+      - Fixtures and hooks shared by that directory and below, unimported
+      - Configuring pytest command-line options only
+      - Declaring which tests to run
+      - Storing test data
+    answer: 0
+    explain: >-
+      pytest discovers `conftest.py` automatically and makes its fixtures available to the directory
+      tree beneath it, without any import. Multiple conftest files compose, nearest first. Importing
+      a fixture by name from a module instead is a common mistake that produces confusing errors.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: exit-code-meaning
+    type: multiple-choice
+    difficulty: 3
+    tags: [ci]
+    prompt: pytest exits with code 5. What happened?
+    options:
+      - No tests were collected
+      - Five tests failed
+      - Internal error
+      - Tests were interrupted by the user
+    answer: 0
+    explain: >-
+      Exit 5 means NO TESTS RAN. It is the most important code to handle in CI, because a wrapper
+      that only checks `!= 0` treats it as failure while a wrapper checking `== 1` treats it as
+      success — a green build over an empty test set. Codes: 0 all passed, 1 tests failed, 2
+      interrupted, 3 internal error, 4 usage error, 5 no tests collected.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: assert-rewriting
+    type: multiple-choice
+    difficulty: 2
+    tags: [assertions]
+    prompt: Why can pytest show the intermediate values in a plain `assert a == b` failure?
+    options:
+      - It requires you to use `assert_equal` helpers
+      - It uses the standard library's assertion machinery
+      - It rewrites assert statements at import time to capture sub-expression values
+      - It parses the source file after the failure
+    answer: 2
+    explain: >-
+      pytest rewrites the AST of test modules at import, so a bare `assert` reports both operands
+      and the diff. The catch: rewriting only applies to test modules and to plugins that register
+      for it, so asserts inside an imported helper module show no detail unless you call
+      `pytest.register_assert_rewrite`.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: raises-usage
+    type: multiple-choice
+    difficulty: 3
+    tags: [assertions]
+    prompt: What is wrong with `with pytest.raises(Exception):` around the whole test body?
+    options:
+      - It cannot catch custom exceptions
+      - It requires a `match` argument
+      - It only works on the last statement in the block
+      - It is too broad — any unexpected error satisfies it
+    answer: 3
+    explain: >-
+      A broad `raises(Exception)` around a large block will pass on an AttributeError from a
+      misspelled method, so the test asserts nothing about the behaviour it names. Narrow the
+      exception type, wrap only the call that should raise, and add `match=` to pin the message.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: xfail-vs-skip
+    type: multiple-choice
+    difficulty: 3
+    tags: [marks]
+    prompt: What is the difference between `skip` and `xfail`?
+    options:
+      - skip works only at module level; xfail only on functions
+      - They are aliases
+      - skip does not run the test; xfail runs it and expects failure
+      - skip is permanent; xfail is temporary
+    answer: 2
+    explain: >-
+      `xfail` still executes, so it tells you when the underlying bug is fixed — an XPASS is a signal
+      to remove the mark. `skip` executes nothing and therefore silently rots. Use `strict=True` on
+      xfail to turn an unexpected pass into a failure. Either way, file an issue: an unexplained
+      skip is how a suite quietly shrinks.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: monkeypatch-scope
+    type: multiple-choice
+    difficulty: 3
+    tags: [fixtures]
+    prompt: Why prefer the `monkeypatch` fixture over assigning to a module attribute directly?
+    options:
+      - Direct assignment is forbidden by pytest
+      - monkeypatch can patch across processes
+      - monkeypatch reverses every change at teardown
+      - monkeypatch is faster
+    answer: 2
+    explain: >-
+      A raw assignment persists for the rest of the run, so the test that made it passes and some
+      later, unrelated test fails — the hardest kind of failure to trace. monkeypatch records and
+      undoes each change. It also handles env vars (`setenv`, `delenv`) and `chdir`.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: tmp-path
+    type: multiple-choice
+    difficulty: 1
+    tags: [fixtures]
+    prompt: What does the built-in `tmp_path` fixture provide?
+    options:
+      - An in-memory filesystem
+      - A path that must be created by the test
+      - A unique, per-test temporary directory as a pathlib.Path, cleaned up automatically
+      - A path to the system temp directory shared by all tests
+    answer: 2
+    explain: >-
+      Each test gets its own directory, so file-based tests cannot collide or depend on each other's
+      leftovers. pytest keeps the last few runs on disk for debugging. `tmp_path_factory` is the
+      session-scoped equivalent when a fixture needs one.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: fixture-request-param
+    type: multiple-choice
+    difficulty: 4
+    tags: [fixtures]
+    prompt: What does `@pytest.fixture(params=[1, 2, 3])` do?
+    options:
+      - The fixture returns the list [1, 2, 3]
+      - The fixture is created three times but only the last is used
+      - It is a syntax error; params belongs on parametrize
+      - Every test using the fixture runs three times, once per param, accessible via `request.param`
+    answer: 3
+    explain: >-
+      Parametrising the FIXTURE multiplies every dependent test, which is how you run one suite
+      against several backends or configurations without touching the tests. It composes with
+      `parametrize`, so a 3-param fixture and a 4-case parametrize gives twelve tests — easy to
+      cause an accidental combinatorial explosion.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: strict-markers
+    type: multiple-choice
+    difficulty: 3
+    tags: [config]
+    prompt: What does `--strict-markers` (or `addopts = --strict-markers`) protect against?
+    options:
+      - Deprecation warnings being ignored
+      - A typo'd mark silently doing nothing
+      - Tests running out of order
+      - Fixtures leaking between tests
+    answer: 1
+    explain: >-
+      Without it, `@pytest.mark.slwo` is accepted as an unknown mark and the test simply is not in
+      the "slow" group — so `-m "not slow"` silently includes it. Strict markers turn unregistered
+      marks into an error, which means every mark must be declared in the config. This is the same
+      failure family as exit code 5: a green result over the wrong set.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: xdist-ordering
+    type: true-false
+    difficulty: 3
+    tags: [ci]
+    prompt: Running with `pytest -n auto` (xdist) guarantees tests execute in the same order as a serial run.
+    options: ["True", "False"]
+    answer: 1
+    explain: >-
+      False. Tests are distributed across workers, so ordering and grouping change. Any test that
+      depended on a previous test's leftover state will start failing — which is usually xdist
+      exposing a real defect in the suite rather than causing one. Session-scoped fixtures are also
+      created once PER WORKER, not once per run.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: fixture-override
+    type: multiple-choice
+    difficulty: 4
+    tags: [fixtures]
+    prompt: A fixture named `db` exists in the root `conftest.py`. A test module defines its own `db` fixture. Which one do that module's tests get?
+    options:
+      - An error about a duplicate fixture
+      - The module's own — the nearest definition wins
+      - The root one — conftest always takes precedence
+      - Both, as a tuple
+    answer: 1
+    explain: >-
+      Fixture resolution is nearest-first, so a local definition overrides an outer one. The useful
+      trick is that the override can itself request `db` as an argument and receive the OUTER
+      fixture, letting you wrap or specialise it rather than duplicate it.
+    provenance: authored
+    reviewed_by: jesse

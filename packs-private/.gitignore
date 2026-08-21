@@ -1,0 +1,5 @@
+# Nothing in this directory is ever published or committed.
+# Packs marked `license: private` live here. See README.md in this directory.
+*
+!.gitignore
+!README.md

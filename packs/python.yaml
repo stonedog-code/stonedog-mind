@@ -1,0 +1,275 @@
+pack: python
+version: 1
+title: Python
+description: Language semantics, the data model, and the traps that survive code review.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [practice]
+locale: en-GB
+
+items:
+
+  - id: mutable-default-arg
+    type: multiple-choice
+    difficulty: 3
+    tags: [gotchas]
+    prompt: |
+      What does this print?
+
+          def add(item, bucket=[]):
+              bucket.append(item)
+              return bucket
+
+          print(add(1), add(2))
+    options:
+      - "TypeError"
+      - "[1, 2] [1, 2]"
+      - "[1] [2]"
+      - "[1] [1, 2]"
+    answer: 1
+    explain: >-
+      The default argument is evaluated ONCE, when the function is defined, so both calls share
+      one list. By the time print formats its arguments, both names refer to that same [1, 2].
+      The fix is `bucket=None` and `if bucket is None: bucket = []`.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: is-vs-equals
+    type: multiple-choice
+    difficulty: 2
+    tags: [semantics]
+    prompt: When is `is` the correct operator rather than `==`?
+    options:
+      - When comparing against a singleton such as None, True or False
+      - When comparing strings, because it is faster
+      - When comparing integers, because small ints are cached
+      - Whenever both operands have the same type
+    answer: 0
+    explain: >-
+      `is` tests identity — the same object in memory. Only use it for singletons, chiefly
+      `x is None`. Small-int and short-string caching makes `is` appear to work on values, which is
+      exactly why it is dangerous: `256 is 256` is True and `257 is 257` may not be, depending on
+      how the code was compiled.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: gil-truth
+    type: multiple-choice
+    difficulty: 3
+    tags: [concurrency]
+    prompt: In CPython, which workload does threading genuinely speed up?
+    options:
+      - I/O-bound work, because the GIL is released during blocking I/O
+      - CPU-bound number crunching in pure Python
+      - Any workload, because threads run on separate cores
+      - Neither — threads are always slower than sequential code
+    answer: 0
+    explain: >-
+      The Global Interpreter Lock allows only one thread to execute Python bytecode at a time, so
+      pure-Python CPU work does not parallelise. But the GIL is released around blocking I/O and
+      inside many C extensions, so threads are effective for network and disk work.
+      CPU-bound work needs `multiprocessing`, or a free-threaded build.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: generator-vs-list
+    type: multiple-choice
+    difficulty: 2
+    tags: [semantics]
+    prompt: What is the practical difference between `[x*2 for x in data]` and `(x*2 for x in data)`?
+    options:
+      - They are identical; the brackets are a style choice
+      - The first builds a list; the second yields lazily, once only
+      - The first is faster; the second is slower but equivalent
+      - The second is a tuple comprehension
+    answer: 1
+    explain: >-
+      Square brackets build a list eagerly. Parentheses create a generator expression, which
+      computes values on demand — constant memory regardless of input size, but exhausted after one
+      pass. There is no tuple comprehension in Python; `tuple(x*2 for x in data)` is how you get one.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: dataclass-frozen
+    type: multiple-choice
+    difficulty: 3
+    tags: [stdlib]
+    prompt: What does `@dataclass(frozen=True)` give you that a plain dataclass does not?
+    options:
+      - Immutability and a generated `__hash__`
+      - Faster attribute access
+      - Automatic validation of field types at runtime
+      - Thread safety for all operations on the instance
+    answer: 0
+    explain: >-
+      `frozen=True` makes assignment raise `FrozenInstanceError` and generates `__hash__` (a plain
+      dataclass with `eq=True` sets `__hash__` to None, making it unhashable). Note it does NOT
+      validate types — annotations are not enforced at runtime — and a frozen dataclass holding a
+      mutable list is only shallowly immutable.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: except-order
+    type: multiple-choice
+    difficulty: 3
+    tags: [exceptions]
+    prompt: |
+      Why does this never reach the second handler?
+
+          try:
+              risky()
+          except Exception:
+              log()
+          except ValueError:
+              recover()
+    options:
+      - The second clause is a syntax error
+      - Handlers match in order, and ValueError subclasses Exception
+      - Python allows only one except clause per try
+      - ValueError is not an Exception subclass
+    answer: 1
+    explain: >-
+      Except clauses are checked top to bottom, and the first matching class wins. Always order
+      handlers most specific first. This is a silent failure — the code runs, logs, and quietly
+      never recovers.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: pathlib-over-os
+    type: multiple-choice
+    difficulty: 1
+    tags: [stdlib]
+    prompt: What is the modern equivalent of `os.path.join(base, "sub", "file.txt")`?
+    options:
+      - "Path(base).append(\"sub\", \"file.txt\")"
+      - "os.sep.join([base, \"sub\", \"file.txt\"])"
+      - "Path(base) / \"sub\" / \"file.txt\""
+      - "Path.join(base, \"sub\", \"file.txt\")"
+    answer: 2
+    explain: >-
+      `pathlib.Path` overloads `/` for joining, and carries methods like `.read_text()`,
+      `.exists()` and `.mkdir(parents=True)`. Option D is the bug this replaces — hand-joining on
+      `os.sep` breaks on mixed separators and doubles them if a component already ends in one.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: context-manager-purpose
+    type: multiple-choice
+    difficulty: 2
+    tags: [semantics]
+    prompt: What guarantee does a `with` block give that a `try/finally` alone does not?
+    options:
+      - It runs the cleanup in a separate thread
+      - It retries the block if an exception occurs
+      - None in principle — it packages the guarantee so callers cannot forget
+      - It suppresses all exceptions raised in the block
+    answer: 2
+    explain: >-
+      A context manager IS try/finally, moved into an object so the acquisition and release live
+      together and every caller gets the release for free. `__exit__` can suppress an exception by
+      returning True, but that is opt-in and rare — a context manager that silently swallows
+      exceptions is usually a bug.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: shallow-copy
+    type: multiple-choice
+    difficulty: 3
+    tags: [gotchas]
+    prompt: |
+      `rows = [[0] * 3] * 2` then `rows[0][0] = 9`. What is `rows`?
+    options:
+      - "[[9, 0, 0], [0, 0, 0]]"
+      - "[[9, 9, 9], [0, 0, 0]]"
+      - "TypeError"
+      - "[[9, 0, 0], [9, 0, 0]]"
+    answer: 3
+    explain: >-
+      The outer `* 2` copies the REFERENCE to the inner list, not the list, so both rows are the
+      same object. Use `[[0] * 3 for _ in range(2)]`. The inner `[0] * 3` is safe only because ints
+      are immutable.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: walrus
+    type: multiple-choice
+    difficulty: 2
+    tags: [syntax]
+    prompt: What does the walrus operator `:=` do?
+    options:
+      - Unpacks an iterable into a variable
+      - Declares a variable as belonging to the enclosing scope
+      - Assigns a value as part of a larger expression
+      - Compares two values for identity
+    answer: 2
+    explain: >-
+      `if (n := len(data)) > 10:` binds `n` and tests it in one expression, avoiding a separate
+      line or a repeated call. It shines in while loops and comprehension filters; overused, it
+      makes a line do two things and reads badly.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: async-blocking
+    type: multiple-choice
+    difficulty: 4
+    tags: [concurrency]
+    prompt: What happens if you call `time.sleep(5)` inside an `async def` coroutine?
+    options:
+      - It raises a RuntimeError
+      - It is automatically converted to `asyncio.sleep`
+      - The whole event loop blocks for five seconds, stalling every other task
+      - Only that coroutine sleeps; others continue
+    answer: 2
+    explain: >-
+      `time.sleep` is synchronous and blocks the thread running the event loop, so every other task
+      on that loop is frozen. Use `await asyncio.sleep(5)`. The same trap applies to any synchronous
+      library call — `requests` in async code blocks the loop, which is why `httpx` or `aiohttp`
+      exist. Wrap unavoidable blocking calls in `asyncio.to_thread`.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: name-main
+    type: multiple-choice
+    difficulty: 1
+    tags: [semantics]
+    prompt: 'What is `if __name__ == "__main__":` for?'
+    options:
+      - It marks the entry point required by the interpreter
+      - It prevents the module from being imported
+      - It defines the module's public API
+      - It runs the block only when the file is executed directly, not when it is imported
+    answer: 3
+    explain: >-
+      When a module is imported, `__name__` is the module's name; when it is run as a script, it is
+      `"__main__"`. Without the guard, import-time side effects fire during test collection or when
+      another module imports yours — a common cause of tests that hang.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: type-hints-runtime
+    type: true-false
+    difficulty: 2
+    tags: [typing]
+    prompt: Python enforces type hints at runtime, raising an error if an argument has the wrong type.
+    options: ["True", "False"]
+    answer: 1
+    explain: >-
+      False. Annotations are metadata; the interpreter does not check them. Enforcement comes from
+      a static checker (mypy, pyright) run separately, or from a library that opts in explicitly —
+      Pydantic validates because it was written to, not because Python does.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: dict-ordering
+    type: true-false
+    difficulty: 2
+    tags: [stdlib]
+    prompt: Since Python 3.7, regular dicts preserve insertion order as a language guarantee.
+    options: ["False", "True"]
+    answer: 1
+    explain: >-
+      True. It was an implementation detail in CPython 3.6 and became a language guarantee in 3.7.
+      `OrderedDict` still has uses — it compares order-sensitively under `==` and offers
+      `move_to_end` — but ordinary code no longer needs it just to keep order.
+    provenance: authored
+    reviewed_by: jesse

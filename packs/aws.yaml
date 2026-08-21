@@ -1,0 +1,265 @@
+pack: aws
+version: 1
+title: AWS
+description: IAM, networking, storage and the service boundaries that decide an architecture.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [practice]
+locale: en-GB
+
+items:
+
+  - id: iam-explicit-deny
+    type: multiple-choice
+    difficulty: 3
+    tags: [iam]
+    prompt: >-
+      A user has an identity policy allowing `s3:GetObject` on a bucket. The bucket policy
+      explicitly denies that action for their principal. What is the result?
+    options:
+      - Access allowed — identity policies take precedence over resource policies
+      - Access allowed — the most specific policy wins
+      - Undefined, depending on evaluation order
+      - Access denied — an explicit deny always wins
+    answer: 3
+    explain: >-
+      IAM evaluation is: explicit deny > explicit allow > implicit deny (the default). An explicit
+      deny anywhere — identity policy, resource policy, SCP, permissions boundary, session policy —
+      is final and cannot be overridden. This is what makes a deny-based guardrail trustworthy.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: iam-role-vs-user
+    type: multiple-choice
+    difficulty: 2
+    tags: [iam]
+    prompt: What is the practical security advantage of an IAM role over an IAM user for an application?
+    options:
+      - Roles bypass MFA requirements
+      - Roles issue short-lived credentials that rotate automatically
+      - Roles can be assigned more permissions than users
+      - Roles are free while users are billed
+    answer: 1
+    explain: >-
+      An assumed role delivers temporary credentials via STS that expire automatically. An IAM user's
+      access key lives until someone rotates it, and it ends up in a config file, an env var, or a
+      commit. "Use a role" is the single highest-value AWS security habit.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: sg-vs-nacl
+    type: multiple-choice
+    difficulty: 3
+    tags: [vpc]
+    prompt: What is the key behavioural difference between a security group and a network ACL?
+    options:
+      - NACLs are stateful; security groups are stateless
+      - Security groups support deny rules; NACLs do not
+      - Security groups are stateful and allow-only; NACLs are stateless and support deny rules
+      - Security groups apply to subnets; NACLs apply to instances
+    answer: 2
+    explain: >-
+      A security group tracks connections, so return traffic is automatically permitted and you only
+      write inbound rules. A NACL evaluates each packet independently, so blocking an inbound port
+      without a matching outbound rule breaks the reply. NACLs are the only place you can express an
+      explicit deny at the network layer.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: s3-consistency
+    type: true-false
+    difficulty: 3
+    tags: [s3]
+    prompt: S3 provides strong read-after-write consistency for all GET, PUT and LIST operations.
+    options: ["True", "False"]
+    answer: 0
+    explain: >-
+      True since December 2020. Before that, overwrite PUTs and DELETEs were eventually consistent,
+      and a great deal of application code was written to work around it. Much of that
+      retry-until-it-appears code is still out there and is now dead weight.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: kms-envelope
+    type: multiple-choice
+    difficulty: 4
+    tags: [kms]
+    prompt: Why does envelope encryption use a data key rather than encrypting data with the CMK directly?
+    options:
+      - The CMK cannot perform symmetric encryption
+      - Data keys are cheaper to rotate on a schedule than CMKs are
+      - It is required for FIPS 140-2 validated compliance modes
+      - KMS caps direct encryption at 4 KB, and local keys avoid a network call
+    answer: 3
+    explain: >-
+      `kms:Encrypt` handles at most 4 KB. Envelope encryption calls `GenerateDataKey`, receives the
+      key in both plaintext and CMK-wrapped form, encrypts locally at any size, stores the wrapped
+      key beside the ciphertext, and discards the plaintext key. Only `Decrypt` on the small wrapped
+      key needs KMS later.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: secrets-vs-param
+    type: multiple-choice
+    difficulty: 3
+    tags: [security]
+    prompt: What does Secrets Manager offer that SSM Parameter Store SecureString does not?
+    options:
+      - Version history retained for every stored value
+      - Built-in automatic rotation and cross-region replication
+      - Encryption at rest using a customer-managed KMS key
+      - Access governed by IAM policies and resource conditions
+    answer: 1
+    explain: >-
+      Both encrypt with KMS, are IAM-controlled and versioned. Secrets Manager adds managed rotation
+      (native for supported databases), replication, and a JSON-blob convention — at a per-secret
+      monthly cost. Parameter Store standard tier is free, which is why config that is not truly
+      secret often belongs there.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: lambda-cold-start
+    type: multiple-choice
+    difficulty: 3
+    tags: [lambda]
+    prompt: Which reliably reduces Lambda cold-start latency?
+    options:
+      - Provisioned concurrency, keeping environments initialised
+      - Increasing the configured function timeout setting
+      - Moving configuration into more environment variables
+      - Using a larger deployment package
+    answer: 0
+    explain: >-
+      Provisioned concurrency pre-initialises environments so the init phase is already done. More
+      memory also helps indirectly, because CPU scales with memory and initialisation runs faster.
+      A larger package makes cold starts worse. Timeout has no effect on start latency at all.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: sqs-fifo
+    type: multiple-choice
+    difficulty: 3
+    tags: [messaging]
+    prompt: What does an SQS FIFO queue guarantee that a standard queue does not?
+    options:
+      - A longer maximum retention period for messages
+      - Automatic dead-letter queue handling on repeated failure
+      - Strict ordering per message group and deduplication
+      - Substantially higher sustained message throughput
+    answer: 2
+    explain: >-
+      Standard queues are at-least-once with best-effort ordering, so consumers must be idempotent.
+      FIFO adds ordering per message group id and deduplication over a five-minute window, at lower
+      throughput. Both support dead-letter queues and the same retention limits.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: rds-multi-az
+    type: multiple-choice
+    difficulty: 3
+    tags: [rds]
+    prompt: What does RDS Multi-AZ provide?
+    options:
+      - Disaster recovery by replicating into another region
+      - Automatic sharding of the database
+      - A synchronous standby in another AZ for automatic failover
+      - Additional read capacity across AZs
+    answer: 2
+    explain: >-
+      The standby is not readable; it exists to take over on failure via a DNS change. Read scaling
+      comes from read replicas, which are asynchronous and can lag. Confusing the two is a common
+      design error — adding Multi-AZ to fix a read-throughput problem changes nothing.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: s3-lifecycle
+    type: multiple-choice
+    difficulty: 2
+    tags: [s3]
+    prompt: What is the purpose of an S3 lifecycle policy?
+    options:
+      - Transitioning objects between storage classes, or expiring them
+      - Replicating objects to another region
+      - Controlling which principals may read each object
+      - Keeping a version of each object on every write
+    answer: 0
+    explain: >-
+      Lifecycle rules automate the cost curve — Standard to Infrequent Access to Glacier to
+      expiration — based on age or on non-current version status. Replication, access control and
+      versioning are separate features that lifecycle rules often work alongside.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: cloudfront-oac
+    type: multiple-choice
+    difficulty: 4
+    tags: [cloudfront]
+    prompt: What does Origin Access Control (OAC) achieve for a CloudFront distribution in front of S3?
+    options:
+      - The bucket stays private and only CloudFront can read it
+      - It caches objects at the origin
+      - It encrypts objects at rest
+      - It compresses responses automatically
+    answer: 0
+    explain: >-
+      Without OAC (or the older OAI), a public bucket can be reached directly, bypassing CloudFront's
+      caching, WAF rules and logging entirely. OAC lets CloudFront sign requests with SigV4 so the
+      bucket policy can allow only that distribution.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: vpc-endpoint
+    type: multiple-choice
+    difficulty: 4
+    tags: [vpc]
+    prompt: Why use a VPC gateway endpoint for S3?
+    options:
+      - Traffic reaches S3 without traversing a NAT gateway
+      - It makes S3 requests faster than any other method
+      - It is required for private buckets
+      - It provides a static IP for S3
+    answer: 0
+    explain: >-
+      Without an endpoint, a private-subnet instance reaches S3 through a NAT gateway, which is
+      billed per hour and per GB processed. A gateway endpoint is free, adds a route table entry, and
+      keeps the traffic off the public internet. Interface endpoints (PrivateLink) serve most other
+      services and do carry an hourly charge.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: shared-responsibility
+    type: multiple-choice
+    difficulty: 2
+    tags: [security]
+    prompt: Under the shared responsibility model, who is responsible for patching the guest OS on an EC2 instance?
+    options:
+      - Neither — EC2 patches itself
+      - The customer
+      - AWS
+      - AWS for security patches, the customer for feature updates
+    answer: 1
+    explain: >-
+      AWS is responsible for security OF the cloud — hardware, hypervisor, facilities. The customer
+      is responsible for security IN the cloud, which for EC2 includes the guest OS, its patches,
+      applications and data. The boundary moves with the service: for Lambda or RDS, AWS patches the
+      underlying OS.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: region-az
+    type: multiple-choice
+    difficulty: 1
+    tags: [fundamentals]
+    prompt: What is an Availability Zone?
+    options:
+      - One or more discrete data centres with independent power
+      - A geographic region containing multiple data centres
+      - An edge location used by CloudFront
+      - A logical grouping of subnets
+    answer: 0
+    explain: >-
+      A region contains multiple AZs; each AZ is isolated for failure purposes but connected to the
+      others by low-latency links. Deploying across AZs is the basic availability move. Edge
+      locations are a separate, much larger network used for content delivery.
+    provenance: authored
+    reviewed_by: jesse

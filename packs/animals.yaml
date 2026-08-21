@@ -1,0 +1,315 @@
+pack: animals
+version: 1
+title: Animals
+description: >-
+  Creatures wild and domestic — written to be enjoyed and talked about, not to be
+  scored. Suitable for companion mode.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [companion, practice]
+locale: en-GB
+
+# COMPANION-MODE CONTENT RULES
+# - Nothing about death, predation in detail, illness, extinction or endangerment.
+#   The subject is delight, not decline.
+# - Nothing requiring recall of a recent or changing fact.
+# - Every explanation gives something worth saying out loud to another person.
+# - At least three difficulty-1 items form the warmup pool.
+
+items:
+
+  # ---- warmup pool (difficulty 1) ----
+
+  - id: cow-sound
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, farm]
+    prompt: Which animal gives us milk on most farms?
+    options: ["A horse", "A sheepdog", "A cow", "A goose"]
+    answer: 2
+    explain: >-
+      A cow. Dairy cows are creatures of routine — they will often queue up for milking in the same
+      order every single day, and get put out if the order changes.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: cat-babies
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, pets]
+    prompt: What do we call a baby cat?
+    options: ["A foal", "A kitten", "A cub", "A calf"]
+    answer: 1
+    explain: >-
+      A kitten. A group of them is properly called a kindle — one of the loveliest words in English
+      and one almost nobody gets to use.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: bird-flies
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, birds]
+    prompt: Which of these birds cannot fly?
+    options: ["A robin", "A swallow", "A blackbird", "A penguin"]
+    answer: 3
+    explain: >-
+      A penguin. It has swapped flying for swimming, and it is marvellous at it — a penguin
+      underwater looks exactly like a bird in flight.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: dog-sense
+    type: multiple-choice
+    difficulty: 1
+    tags: [warmup, pets]
+    prompt: Which sense is a dog famous for having far better than ours?
+    options: ["Smell", "Sight", "Taste", "Touch"]
+    answer: 0
+    explain: >-
+      Smell. A dog's nose is so good that it can tell which way along a path someone walked, just
+      from how the scent fades from one footstep to the next.
+    provenance: authored
+    reviewed_by: jesse
+
+  # ---- everyday (difficulty 2) ----
+
+  - id: elephant-ears
+    type: multiple-choice
+    difficulty: 2
+    tags: [wild]
+    prompt: What are an elephant's enormous ears mainly for?
+    options: ["Swatting flies", "Keeping cool", "Hearing over long distances", "Balance"]
+    answer: 1
+    explain: >-
+      Keeping cool. They are full of blood vessels, so flapping them fans the blood and cools the
+      whole animal — like a radiator with a built-in fan.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: honey-bees
+    type: multiple-choice
+    difficulty: 2
+    tags: [insects]
+    prompt: How do honeybees tell each other where the flowers are?
+    options: ["By singing", "By leaving a trail", "By colour", "By dancing"]
+    answer: 3
+    explain: >-
+      By dancing. A returning bee performs a little figure-of-eight waggle, and the angle of the
+      dance tells the others the direction relative to the sun. It really is a set of directions.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: giraffe-neck
+    type: multiple-choice
+    difficulty: 2
+    tags: [wild]
+    prompt: How many bones are in a giraffe's neck?
+    options: ["Just one long one", "Seven — the same as ours", "Twenty", "Fifty"]
+    answer: 1
+    explain: >-
+      Seven, exactly as in your own neck. They are simply enormous. Nearly every mammal has seven,
+      from a mouse to a whale.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: owl-head
+    type: multiple-choice
+    difficulty: 2
+    tags: [birds]
+    prompt: Why does an owl turn its whole head to look at things?
+    options:
+      - Its eyes cannot move in their sockets
+      - Its neck is stiff
+      - It hears better sideways
+      - It is showing off
+    answer: 0
+    explain: >-
+      Its eyes are fixed in place — they are tubes, not balls, which is what makes them so good in
+      the dark. To compensate, an owl can turn its head about three-quarters of the way round.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: penguin-huddle
+    type: multiple-choice
+    difficulty: 2
+    tags: [birds]
+    prompt: When emperor penguins huddle together for warmth, what do they do that seems remarkably fair?
+    options:
+      - The young stay outside
+      - They take turns on the cold outside edge
+      - They put the largest birds outside
+      - They swap every hour exactly
+    answer: 1
+    explain: >-
+      They shuffle constantly, so everyone gets a turn in the warm middle and a turn on the windy
+      edge. The whole huddle drifts slowly across the ice as they rotate.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: octopus-hearts
+    type: multiple-choice
+    difficulty: 3
+    tags: [sea]
+    prompt: How many hearts does an octopus have?
+    options: ["Two", "Eight — one per arm", "Three", "One"]
+    answer: 2
+    explain: >-
+      Three. Two pump blood through the gills and the third sends it round the body — and that third
+      one stops when the octopus swims, which is partly why they would rather walk.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: sheep-eyes
+    type: multiple-choice
+    difficulty: 3
+    tags: [farm]
+    prompt: What is unusual about a sheep's pupils?
+    options:
+      - They are round like ours
+      - They are vertical slits
+      - They change colour
+      - They are rectangular
+    answer: 3
+    explain: >-
+      They are rectangular, which gives a sheep a very wide view of the field without moving its
+      head. Goats have them too. Once you have noticed it you cannot unnotice it.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: swan-pairs
+    type: multiple-choice
+    difficulty: 3
+    tags: [birds]
+    prompt: What are mute swans well known for?
+    options:
+      - Pairing for many years
+      - Migrating alone
+      - Nesting in trees
+      - Feeding at night only
+    answer: 0
+    explain: >-
+      Long partnerships — many pairs stay together year after year, returning to the same stretch of
+      river. When they face each other, their necks make the shape of a heart.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: horse-sleep
+    type: multiple-choice
+    difficulty: 3
+    tags: [farm]
+    prompt: How do horses usually doze during the day?
+    options:
+      - Lying flat on their side
+      - Leaning against a wall
+      - Sitting like a dog
+      - Standing up, on locking legs
+    answer: 3
+    explain: >-
+      Standing up. A clever arrangement of tendons locks the legs so no effort is needed. They do lie
+      down for proper deep sleep, but only for short stretches, and usually with a friend keeping
+      watch.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: cat-purr
+    type: multiple-choice
+    difficulty: 3
+    tags: [pets]
+    prompt: When do cats purr?
+    options:
+      - Only when they are happy
+      - Only when they want food
+      - Only as kittens
+      - When content, and when unsettled
+    answer: 3
+    explain: >-
+      Both. Purring seems to be a self-soothing signal as much as a happy one, which is why a cat at
+      the vet may purr steadily. Kittens purr within days of being born.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: dolphin-sleep
+    type: multiple-choice
+    difficulty: 4
+    tags: [sea]
+    prompt: How does a dolphin sleep without drowning?
+    options:
+      - Half its brain sleeps while the other half stays awake
+      - It floats on its back
+      - It sleeps on the seabed and holds its breath
+      - It does not sleep at all
+    answer: 0
+    explain: >-
+      One half at a time, with one eye open. Breathing is a conscious act for a dolphin, so half the
+      brain must stay on duty — and the open eye is usually the one watching the rest of the pod.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: robin-territory
+    type: multiple-choice
+    difficulty: 3
+    tags: [birds, garden]
+    prompt: Why does a robin so often follow a gardener around?
+    options:
+      - It likes company
+      - Digging turns up worms and insects
+      - It is looking for nesting material
+      - It is defending its young
+    answer: 1
+    explain: >-
+      A turned spadeful is a free meal. In woodland, robins follow wild boar for exactly the same
+      reason — the gardener is simply standing in for the pig.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: bat-navigation
+    type: multiple-choice
+    difficulty: 3
+    tags: [wild]
+    prompt: How does a bat find its way in the dark?
+    options:
+      - By touch, using its wings
+      - By echoes of its own calls
+      - By moonlight
+      - By smell
+    answer: 1
+    explain: >-
+      Echolocation — it calls out and reads the echoes, building a picture of the room. The calls are
+      mostly far too high for us to hear, which is why the whole performance looks silent.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: pigeon-homing
+    type: multiple-choice
+    difficulty: 4
+    tags: [birds]
+    prompt: A homing pigeon carried hundreds of miles away can find its loft again. What helps it?
+    options:
+      - It senses the Earth's magnetic field
+      - It follows other pigeons
+      - It retraces the route it was carried along
+      - It listens for familiar sounds
+    answer: 0
+    explain: >-
+      A magnetic sense, combined with the sun's position and, near home, familiar landmarks and even
+      smells. It has carried messages for thousands of years, and it still is not fully explained.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: seahorse-fathers
+    type: multiple-choice
+    difficulty: 3
+    tags: [sea]
+    prompt: What is unusual about seahorse fathers?
+    options:
+      - The male builds the nest alone
+      - The male guards the eggs on the seabed
+      - The male feeds the young for a year
+      - The male carries the eggs in a pouch until they hatch
+    answer: 3
+    explain: >-
+      The male carries them. The female places the eggs into a pouch on his front, and he carries
+      them until they hatch — one of very few animals where the father is the one who is pregnant.
+    provenance: authored
+    reviewed_by: jesse

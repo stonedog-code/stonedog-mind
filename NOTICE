@@ -1,0 +1,63 @@
+stonedog-mind
+Copyright 2026 StoneDogCode L.L.C.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+---
+
+TWO LICENCES, DELIBERATELY
+
+Code and quiz content are licensed separately, because they are used
+differently and a single licence would serve one badly.
+
+  Code      Apache License 2.0            LICENSE
+            Everything that is not a quiz pack: the validator, the
+            scripts, and any engine code added later.
+
+  Content   Creative Commons Attribution  packs/*.yaml
+            4.0 International (CC-BY-4.0)
+            The quiz packs. Each pack declares its own `license:` and
+            `source:` fields, which are authoritative for that pack.
+
+Apache-2.0 is the wrong instrument for prose — it speaks of source, object
+form and derivative works — and CC licences are the wrong instrument for
+code. Attribution for reused questions is what CC-BY provides and what the
+packs need; a patent grant and an NOTICE requirement are what the code needs.
+
+A pack that carries a different `license:` value is governed by that value,
+not by this file. Packs incorporating third-party material may be CC-BY-SA
+where the upstream source requires it.
+
+---
+
+NO QUIZ PACK IN THIS REPOSITORY CONTAINS THIRD-PARTY COPYRIGHTED CONTENT
+
+Every question in `packs/` is original work by the copyright holder above.
+Where a pack draws on an external body of knowledge, the pack's `source:`
+field records it.
+
+Content that cannot be published under these terms does not live in this
+repository at all. It is kept out of the working tree by `packs-private/`,
+which is ignored in full — see `packs-private/README.md`.
+
+---
+
+NOT A HEALTH PRODUCT
+
+stonedog-mind is a general-interest quiz tool provided for entertainment and
+enjoyment. It is not a medical device, a cognitive assessment, a diagnostic
+tool or a screening instrument. It has not been clinically evaluated, and no
+claim is made — expressly or by implication — that using it maintains,
+improves, protects, restores or slows any change in memory, attention,
+reasoning or cognitive function. Quiz results are not a measure of health and
+must not be used as one.

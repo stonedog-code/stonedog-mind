@@ -1,0 +1,258 @@
+pack: agile
+version: 1
+title: Agile
+description: Scrum mechanics, the manifesto, flow, and the anti-patterns that wear agile's clothes.
+license: CC-BY-4.0
+source: Originally authored for stonedog-mind.
+modes: [practice]
+locale: en-GB
+
+items:
+
+  - id: manifesto-values
+    type: multiple-choice
+    difficulty: 2
+    tags: [manifesto]
+    prompt: The Agile Manifesto values "working software over comprehensive documentation". What does "over" mean here?
+    options:
+      - The two are alternatives and a team must pick one
+      - Both items have value; the left is valued more when a trade-off must be made
+      - The right-hand item has no value and should be eliminated
+      - The left item must always be completed before the right
+    answer: 1
+    explain: >-
+      The manifesto's own closing line says it: "while there is value in the items on the right, we
+      value the items on the left more." Reading it as "documentation is forbidden" is the single
+      most common misreading, and it is how teams end up unable to onboard anyone.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: scrum-accountabilities
+    type: multiple-choice
+    difficulty: 2
+    tags: [scrum]
+    prompt: Who is accountable for maximising the value of the product resulting from the work of the Scrum Team?
+    options:
+      - The Scrum Master
+      - The Developers
+      - The stakeholders
+      - The Product Owner
+    answer: 3
+    explain: >-
+      The Product Owner owns value and the Product Backlog. The Scrum Master is accountable for the
+      team's effectiveness and for Scrum being understood and enacted. The Developers are accountable
+      for creating a usable Increment each Sprint. Scrum has three accountabilities, not "roles" —
+      the 2020 Guide changed the word deliberately.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: dod-vs-ac
+    type: multiple-choice
+    difficulty: 3
+    tags: [scrum]
+    prompt: What is the difference between the Definition of Done and acceptance criteria?
+    options:
+      - Acceptance criteria are written by the Scrum Master
+      - DoD applies to every increment; acceptance criteria are specific to one backlog item
+      - They are the same thing under two names
+      - DoD applies to one item; acceptance criteria apply to the release
+    answer: 1
+    explain: >-
+      The Definition of Done is the team's shared quality bar — tested, reviewed, documented,
+      deployable — and it holds for everything. Acceptance criteria describe what THIS story must do
+      to be considered correct. A story can meet its acceptance criteria and still not be Done.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: velocity-misuse
+    type: multiple-choice
+    difficulty: 3
+    tags: [antipatterns]
+    prompt: Why is comparing velocity between two teams a mistake?
+    options:
+      - Velocity only counts bugs
+      - Velocity is measured in hours, which differ by contract
+      - Story points are calibrated within one team, not across teams
+      - Velocity is confidential
+    answer: 2
+    explain: >-
+      Each team establishes its own baseline for what a "3" is, so cross-team comparison measures
+      calibration, not output. Worse, using velocity as a target invites point inflation, which
+      destroys its only real use — the team's own forecasting.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: sprint-goal
+    type: multiple-choice
+    difficulty: 3
+    tags: [scrum]
+    prompt: What is the purpose of the Sprint Goal?
+    options:
+      - A stretch target beyond the committed backlog
+      - A single coherent objective that the Sprint's scope can flex around
+      - A list of every item committed for the Sprint
+      - The Product Owner's target for the release
+    answer: 1
+    explain: >-
+      The Sprint Goal is the commitment for the Sprint Backlog. Because it is an objective rather
+      than a list, the Developers can renegotiate scope with the Product Owner mid-Sprint as they
+      learn, without the Sprint failing. A Sprint whose "goal" is the item list has no goal.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: wip-limits
+    type: multiple-choice
+    difficulty: 3
+    tags: [kanban]
+    prompt: Why does Kanban limit work in progress?
+    options:
+      - It caps the number of people on the team
+      - It guarantees each item is finished within a fixed period
+      - Less concurrent work means shorter cycle times and makes bottlenecks visible — Little's Law
+      - It stops developers working overtime
+    answer: 2
+    explain: >-
+      Little's Law: cycle time = WIP ÷ throughput. Halving WIP roughly halves how long each item
+      takes to get through, for the same throughput. And when a column hits its limit, everyone can
+      see exactly where the constraint is — a queue that would otherwise be invisible.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: retro-purpose
+    type: multiple-choice
+    difficulty: 2
+    tags: [scrum]
+    prompt: What distinguishes a Sprint Retrospective from a Sprint Review?
+    options:
+      - The Retrospective inspects the process; the Review inspects the product
+      - The Retrospective is for managers; the Review is for the team
+      - The Review is optional
+      - The Retrospective happens first
+    answer: 0
+    explain: >-
+      The Review is a working session with stakeholders about the Increment and what to do next —
+      not a demo or a sign-off gate. The Retrospective follows it and is about how the team worked.
+      Collapsing the two loses the process conversation, which is the one nobody will otherwise have.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: invest
+    type: multiple-choice
+    difficulty: 3
+    tags: [stories]
+    prompt: In INVEST, what does the "N" stand for and why does it matter?
+    options:
+      - Negotiable — a placeholder for a conversation, not a contract
+      - Necessary — every story must be essential
+      - Numbered — stories must be uniquely identified
+      - Non-blocking — stories must not depend on others
+    answer: 0
+    explain: >-
+      Independent, Negotiable, Valuable, Estimable, Small, Testable. Negotiable is the one teams lose
+      first: once stories become detailed specifications handed down, the conversation that produces
+      shared understanding stops happening and you have a requirements document with a sticky note
+      on it.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: standup-antipattern
+    type: multiple-choice
+    difficulty: 2
+    tags: [antipatterns]
+    prompt: What signals that a Daily Scrum has degenerated into a status meeting?
+    options:
+      - People report outward to a manager instead of planning together
+      - It finishes well inside its fifteen-minute timebox
+      - It happens at the same time each day
+      - Everyone stands up rather than sitting around the table
+    answer: 0
+    explain: >-
+      The Daily Scrum is for the Developers to inspect progress toward the Sprint Goal and adapt the
+      plan. When the reporting direction turns outward, it becomes a manager's status update with
+      the team as audience — the same fifteen minutes, none of the purpose.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: tech-debt
+    type: multiple-choice
+    difficulty: 3
+    tags: [practices]
+    prompt: In the original metaphor, what is technical debt?
+    options:
+      - A deliberate trade-off taken to ship sooner, carrying interest
+      - Any code that is poorly written or hard to follow
+      - Defects that were found but never scheduled for a fix
+      - Work left over at the end of a sprint
+    answer: 0
+    explain: >-
+      Ward Cunningham's metaphor was about a conscious decision to ship with an imperfect model in
+      order to learn faster, on the understanding that you refactor as understanding improves. Using
+      "tech debt" for code that is simply bad muddies the point — you cannot make a deliberate
+      trade-off you never decided on.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: three-amigos
+    type: multiple-choice
+    difficulty: 3
+    tags: [practices]
+    prompt: Who takes part in a "three amigos" conversation, and why those three?
+    options:
+      - The customer, the sponsor and the architect
+      - Business, development and testing, together before any code
+      - Product Owner, Scrum Master and a developer
+      - Three developers, for a code review
+    answer: 1
+    explain: >-
+      A business voice says what is wanted, a developer says what is buildable, a tester asks how it
+      could go wrong and how we would know. Ambiguity surfaces while it costs a conversation to fix
+      rather than a defect report. It underpins ATDD and BDD-style specification by example.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: scrum-timebox
+    type: multiple-choice
+    difficulty: 2
+    tags: [scrum]
+    prompt: What is the maximum length of a Sprint according to the Scrum Guide?
+    options:
+      - One month
+      - Two weeks
+      - Six weeks
+      - There is no maximum
+    answer: 0
+    explain: >-
+      Sprints are one month or less; shorter Sprints generate more learning cycles and limit risk to
+      a shorter horizon. Sprint Planning is timeboxed to eight hours for a one-month Sprint, the
+      Retrospective to three, the Review to four, and the Daily Scrum to fifteen minutes.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: cross-functional
+    type: true-false
+    difficulty: 2
+    tags: [scrum]
+    prompt: A cross-functional team means every member can do every job on the team.
+    options: ["True", "False"]
+    answer: 1
+    explain: >-
+      False. It means the team collectively has all the skills needed to create a usable Increment
+      without depending on people outside it. Individuals still have depth and specialisms — the
+      T-shape. Expecting universal interchangeability produces generalists who are shallow at
+      everything.
+    provenance: authored
+    reviewed_by: jesse
+
+  - id: story-points-time
+    type: true-false
+    difficulty: 2
+    tags: [estimation]
+    prompt: Story points are a measure of effort, complexity and uncertainty rather than elapsed time.
+    options: ["False", "True"]
+    answer: 1
+    explain: >-
+      True. Points are relative and deliberately not hours, so an estimate does not become a promise
+      about a date. The moment an organisation fixes a points-to-hours conversion, points become
+      hours with extra steps and every reason for using them disappears.
+    provenance: authored
+    reviewed_by: jesse
