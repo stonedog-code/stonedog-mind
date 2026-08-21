@@ -10,7 +10,7 @@
     "apps/*"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22.6"
   },
   "scripts": {
     "dev": "npm run dev --workspace=@stonedogcode/mind-web",
@@ -18,6 +18,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspace=@stonedogcode/mind-core && npm run test:panda --workspace=@stonedogcode/mind-web",
     "validate": "node --experimental-strip-types packages/core/src/cli.ts",
-    "gate": "npm run typecheck && npm test && npm run validate"
+    "gate": "npm run typecheck && npm test && npm run validate",
+    "validate:draft": "node --experimental-strip-types packages/core/src/cli.ts --drafts"
   }
 }

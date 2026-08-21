@@ -26,6 +26,13 @@ const VALID_MODES = new Set<Mode>(["practice", "companion"]);
 const VALID_PROVENANCE = new Set(["authored", "imported", "generated"]);
 
 /**
+ * Below this many items, answer-position share is noise rather than bias — with
+ * four options you need a few dozen before a lopsided distribution means
+ * anything.
+ */
+const CORPUS_SKEW_MIN_ITEMS = 40;
+
+/**
  * Prohibited health claims. A quiz is entertainment; it must never imply a
  * clinical benefit. See NOTICE.
  */
@@ -82,6 +89,18 @@ export interface Violation {
   message: string;
 }
 
+export interface ValidateOptions {
+  /**
+   * Accept `provenance: generated` items that no human has signed off yet.
+   *
+   * This is the ONLY thing that separates a draft from servable content, and it
+   * is what makes the review step enforced rather than advisory: an authoring
+   * tool runs with this on and gets a clean result on a finished draft, while
+   * the normal gate keeps failing until a person puts their name on it.
+   */
+  allowUnreviewed?: boolean;
+}
+
 export interface ValidationReport {
   violations: Violation[];
   packCount: number;
@@ -96,6 +115,7 @@ function checkItem(
   isCompanion: boolean,
   bad: (m: string) => void,
   countPosition: (i: number) => void,
+  opts: ValidateOptions,
 ): { warmup: boolean } {
   const label = `item[${index}] ${item?.id ?? "<no id>"}`;
 
@@ -113,8 +133,10 @@ function checkItem(
     bad(`${label}: unknown provenance '${item.provenance}'`);
   }
 
-  // Generated items are fail-closed without a human reviewer.
-  if (item.provenance === "generated" && !item.reviewed_by) {
+  // Generated items are fail-closed without a human reviewer. No machine check
+  // can decide whether a question has a single defensible correct answer, so
+  // `reviewed_by` is the record of a person having decided it.
+  if (item.provenance === "generated" && !item.reviewed_by && !opts.allowUnreviewed) {
     bad(`${label}: provenance 'generated' with no reviewed_by — refuses to serve`);
   }
 
@@ -175,7 +197,7 @@ function checkItem(
   return { warmup };
 }
 
-export function validatePack(loaded: LoadedPack): Violation[] {
+export function validatePack(loaded: LoadedPack, options: ValidateOptions = {}): Violation[] {
   const violations: Violation[] = [];
   const name = loaded.path.split(/[\\/]/).pop() ?? loaded.path;
   const bad = (message: string) => violations.push({ pack: name, message });
@@ -213,8 +235,13 @@ export function validatePack(loaded: LoadedPack): Violation[] {
   let warmupCount = 0;
 
   items.forEach((item, i) => {
-    const { warmup } = checkItem(item, i, isCompanion, bad, (p) =>
-      positions.set(p, (positions.get(p) ?? 0) + 1),
+    const { warmup } = checkItem(
+      item,
+      i,
+      isCompanion,
+      bad,
+      (p) => positions.set(p, (positions.get(p) ?? 0) + 1),
+      options,
     );
     if (warmup) warmupCount += 1;
     if (item?.id) seen.set(item.id, (seen.get(item.id) ?? 0) + 1);
@@ -247,13 +274,13 @@ export function validatePack(loaded: LoadedPack): Violation[] {
   return violations;
 }
 
-export function validateAll(packs: LoadedPack[]): ValidationReport {
+export function validateAll(packs: LoadedPack[], options: ValidateOptions = {}): ValidationReport {
   const violations: Violation[] = [];
   const answerPositions: Record<number, number> = {};
   let itemCount = 0;
 
   for (const loaded of packs) {
-    violations.push(...validatePack(loaded));
+    violations.push(...validatePack(loaded, options));
     for (const item of loaded.pack.items ?? []) {
       itemCount += 1;
       if (Number.isInteger(item?.answer)) {
@@ -265,11 +292,19 @@ export function validateAll(packs: LoadedPack[]): ValidationReport {
   // The per-pack gate cannot see this: 14 items over 4 options is too small a
   // sample for one pack to look skewed, while the corpus can still be
   // systematically lopsided.
+  //
+  // The minimum matters as much as the thresholds. Without it a brand-new pack
+  // of a dozen items trips this every time — a spurious failure on the exact
+  // path someone authoring their first pack takes, which teaches them to ignore
+  // the validator. A guard that cries wolf is worse than no guard.
   const total = Object.values(answerPositions).reduce((a, b) => a + b, 0);
-  if (total > 0) {
+  if (total >= CORPUS_SKEW_MIN_ITEMS) {
     for (const share of Object.values(answerPositions).map((n) => n / total)) {
       if (share > 0.4 || share < 0.12) {
-        violations.push({ pack: "<corpus>", message: "corpus-wide answer position is skewed" });
+        violations.push({
+          pack: "<corpus>",
+          message: `corpus-wide answer position is skewed over ${total} items`,
+        });
         break;
       }
     }

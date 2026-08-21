@@ -6,19 +6,18 @@ import { parse as parseYaml } from "yaml";
 import type { LoadedPack, Pack } from "./types.ts";
 
 /**
- * Walk up from `from` looking for a directory that contains `packs/`.
+ * Walk up from `from` looking for a directory that contains `packs/`, and
+ * return that directory.
  *
  * Without this, the default resolves relative to the current working
  * directory — which is `apps/web` when Next runs it, so the app looks in
  * `apps/web/packs`, finds nothing, and shows an empty state on a repo that is
- * full of packs. `npm run dev` has to be enough on its own; requiring the
- * caller to know where to stand is the same class of problem as requiring an
- * `.env` file a fresh checkout does not have.
+ * full of packs. `npm run dev` has to be enough on its own.
  */
-function findRepoPacks(from: string): string | undefined {
+function findRepoRoot(from: string): string | undefined {
   let dir = resolve(from);
   for (let i = 0; i < 8; i += 1) {
-    if (isDirectory(join(dir, "packs"))) return join(dir, "packs");
+    if (isDirectory(join(dir, "packs"))) return dir;
     const parent = dirname(dir);
     if (parent === dir) break;
     dir = parent;
@@ -32,6 +31,11 @@ function findRepoPacks(from: string): string | undefined {
  * Every source that exists is merged into one catalogue — this is not
  * first-match-wins on the *directory*, because someone with a personal pack
  * directory still wants the packs that ship with the app.
+ *
+ * `packs-private/` is included deliberately. Those packs are exactly the ones
+ * their owner most wants to study — an internal guide, a syllabus they bought —
+ * and leaving them out meant a private pack validated cleanly and then never
+ * appeared in the app. They are unpublishable, not unusable.
  */
 export function packDirectories(explicit?: string | undefined): string[] {
   if (explicit) return [resolve(explicit)];
@@ -40,8 +44,11 @@ export function packDirectories(explicit?: string | undefined): string[] {
   if (fromEnv) return fromEnv.split(":").filter(Boolean).map((d) => resolve(d));
 
   const dirs: string[] = [];
-  const repo = findRepoPacks(process.cwd());
-  if (repo) dirs.push(repo);
+  const root = findRepoRoot(process.cwd());
+  if (root) {
+    dirs.push(join(root, "packs"));
+    if (isDirectory(join(root, "packs-private"))) dirs.push(join(root, "packs-private"));
+  }
   dirs.push(join(homedir(), ".stonedog-mind", "packs"));
   return dirs;
 }

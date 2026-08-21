@@ -10,7 +10,15 @@ import { resolve } from "node:path";
 import { loadPacks } from "./node.ts";
 import { validateAll, validatePack } from "./validate.ts";
 
+const flags = process.argv.slice(2).filter((a) => a.startsWith("-"));
 const args = process.argv.slice(2).filter((a) => !a.startsWith("-"));
+
+/**
+ * `--drafts` accepts generated items nobody has reviewed yet. Everything else
+ * is still enforced, so an authoring pass gets a real verdict on its work while
+ * the normal gate keeps refusing to serve it.
+ */
+const options = { allowUnreviewed: flags.includes("--drafts") };
 const dirs = (args.length ? args : ["packs", "packs-private"]).map((d) => resolve(d));
 
 for (const dir of dirs) {
@@ -23,7 +31,7 @@ for (const dir of dirs) {
 const packs = loadPacks(dirs);
 
 for (const loaded of packs) {
-  const violations = validatePack(loaded);
+  const violations = validatePack(loaded, options);
   const name = loaded.path.split(/[\\/]/).pop() ?? loaded.path;
   const scope = loaded.public ? "public " : "private";
   const status = violations.length === 0 ? "OK  " : "FAIL";
@@ -31,7 +39,7 @@ for (const loaded of packs) {
   process.stdout.write(`  ${status} ${scope} ${name.padEnd(22)} ${count} items\n`);
 }
 
-const report = validateAll(packs);
+const report = validateAll(packs, options);
 
 const total = Object.values(report.answerPositions).reduce((a, b) => a + b, 0);
 if (total > 0) {
@@ -58,4 +66,8 @@ if (report.violations.length > 0) {
   process.exit(1);
 }
 
-process.stdout.write("No violations.\n");
+process.stdout.write(
+  options.allowUnreviewed
+    ? "No violations (draft mode: unreviewed generated items were accepted).\n"
+    : "No violations.\n",
+);

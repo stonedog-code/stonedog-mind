@@ -11,7 +11,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { containsPhrase, normalise, validatePack } from "./validate.ts";
+import { containsPhrase, normalise, validateAll, validatePack } from "./validate.ts";
 import type { LoadedPack, Pack } from "./types.ts";
 
 function pack(overrides: Partial<Pack> = {}, isPublic = true): LoadedPack {
@@ -155,4 +155,34 @@ test("containsPhrase is word-bounded", () => {
 
 test("normalise strips diacritics and case", () => {
   assert.equal(normalise("Château"), normalise("chateau"));
+});
+
+test("corpus skew does not fire on a small pack set", () => {
+  // A brand-new pack of a dozen items must not trip a corpus-wide statistic.
+  // Firing here would put a spurious failure on the first path a new author
+  // takes, which is how a validator gets ignored.
+  const p = pack();
+  p.pack.items = Array.from({ length: 12 }, (_, i) => ({ ...p.pack.items[0]!, id: `i${i}` }));
+  const violations = validateAll([p]);
+  assert.equal(
+    violations.violations.some((v) => v.message.includes("skewed")),
+    false,
+  );
+});
+
+test("corpus skew DOES fire once the sample is big enough", () => {
+  const p = pack();
+  p.pack.items = Array.from({ length: 60 }, (_, i) => ({ ...p.pack.items[0]!, id: `i${i}` }));
+  const violations = validateAll([p]);
+  assert.ok(violations.violations.some((v) => v.message.includes("skewed")));
+});
+
+test("draft mode accepts an unreviewed generated item; the normal gate does not", () => {
+  const p = pack();
+  p.pack.items[0]!.provenance = "generated";
+  assert.ok(validatePack(p).some((v) => v.message.includes("refuses to serve")));
+  assert.equal(
+    validatePack(p, { allowUnreviewed: true }).some((v) => v.message.includes("refuses to serve")),
+    false,
+  );
 });

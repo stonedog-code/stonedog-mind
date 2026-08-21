@@ -9,7 +9,10 @@ npm install
 npm run dev          # http://localhost:3210
 ```
 
-That is the whole setup. No database, no account, no import step.
+That is the whole setup. No database, no account, no import step. **Node 22.6 or
+newer** — the tooling runs TypeScript directly via `--experimental-strip-types`.
+
+Verified from a clean clone: `npm install && npm run gate && npm run dev`.
 
 ## What's here
 
@@ -37,18 +40,42 @@ ever holds review history. Resolution order:
 
 1. `--packs <dir>`
 2. `STONEDOG_MIND_PACKS` (colon-separated)
-3. the nearest `packs/` directory at or above the working directory
+3. the nearest `packs/` **and `packs-private/`** at or above the working directory
 4. `~/.stonedog-mind/packs`
 
 So for a personal setup: drop `.yaml` files in `~/.stonedog-mind/packs/`. Packs
 are read per request, so a new file shows up on reload with no restart.
 
+`packs-private/` is loaded like any other source. Those packs are unpublishable,
+not unusable — they are usually the ones their owner most wants to study.
+
+## Generating content from a document
+
+Point an LLM at a source document and [`AUTOMATION.md`](AUTOMATION.md):
+
+> *Create quiz content for `onboarding-guide.pdf` using AUTOMATION.md for
+> guidance.*
+
+It drafts a pack, self-checks it with `npm run validate:draft`, and hands it
+back for review. **The review is enforced, not advised:** an item marked
+`provenance: generated` with no `reviewed_by` passes draft validation and is
+refused by the normal gate —
+
+```
+item[0] vpn-client: provenance 'generated' with no reviewed_by — refuses to serve
+```
+
+so a pack only becomes servable once a person has put their name on the items
+they checked. No machine check can decide whether a question has a single
+defensible correct answer.
+
 ## The gate
 
 ```bash
-npm run gate         # typecheck + tests + pack validation
-npm run validate     # just the pack quality gates
-npm test             # core unit tests + the Panda glob guard
+npm run gate           # typecheck + tests + pack validation
+npm run validate       # the pack quality gates
+npm run validate:draft # same, but accepts generated items awaiting review
+npm test               # core unit tests + the Panda glob guard
 ```
 
 Every gate prints the size of its input set. `0 violations over 0 packs` and
