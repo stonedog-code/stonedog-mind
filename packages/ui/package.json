@@ -26,7 +26,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@stonedogcode/mind-core": "0.1.0"
+    "@stonedogcode/mind-core": "^0.1.0"
   },
   "devDependencies": {
     "@stonedogcode/style": "^0.17.0",
@@ -34,5 +34,6 @@
     "react": "^19.0.0",
     "typescript": "^5.6.0",
     "@pandacss/dev": "^1.12.0"
-  }
+  },
+  "//dependencies": "A caret, not an exact pin. Inside the workspace npm resolves this to the local packages/core either way; the difference only shows once both are PUBLISHED, where '0.1.0' would force every consumer onto exactly that version and break them on the next core patch. Note the other repos in this fleet use 'file:' or '*' for internal packages \u2014 those are never published, so they never face this."
 }
