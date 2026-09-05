@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "project": "stonedog-mind",
+  "//layout": "Tests sit BESIDE the source they cover (packages/core/src/*.test.ts) rather than in a __tests__ directory, so a __tests__-shaped glob would match nothing here and report zero. apps/web/panda.test.ts is a build-config guard that runs in the unit tier.",
+  "tiers": {
+    "unit": {
+      "include": ["packages/*/src/**/*.test.ts", "apps/web/panda.test.ts"]
+    }
+  }
+}
